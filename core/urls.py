@@ -25,10 +25,13 @@ urlpatterns = [
     path('reset-all-records/', views.reset_all_records_view, name='reset_all_records'),
     path('reset-now/', views.reset_now_direct, name='reset_now_direct'),
     
-    # PDF / Print Views (म.ले.प. फारामहरू)
+    # PDF / Print & Delete Views (म.ले.प. फारामहरू)
     path('order/<int:pk>/', views.travel_order_pdf, name='travel_order_pdf'),
+    path('order/<int:pk>/delete/', views.delete_order_view, name='delete_order'),
     path('bill/<int:pk>/', views.travel_bill_pdf, name='travel_bill_pdf'),
+    path('bill/<int:pk>/delete/', views.delete_bill_view, name='delete_bill'),
     path('report/<int:pk>/', views.travel_report_pdf, name='travel_report_pdf'),
+    path('report/<int:pk>/delete/', views.delete_report_view, name='delete_report'),
     
     # Travel Record Register (भ्रमण अभिलेख खाता - Landscape Mode)
     path('register/', views.travel_register_view, name='travel_register'),

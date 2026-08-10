@@ -48,10 +48,10 @@ def ensure_logo_synced():
         pass
 
 def is_admin(user):
-    """Checks if the user has administrative privileges (superuser, staff, or Admin group)."""
+    """Checks if the user has System Administrator privileges (superuser or Admin group)."""
     if not user.is_authenticated:
         return False
-    if user.is_superuser or user.is_staff:
+    if user.is_superuser:
         return True
     return user.groups.filter(name__in=['Admin', 'प्रशासक', 'व्यवस्थापक']).exists()
 
@@ -105,6 +105,15 @@ def is_approver(user):
     if user.is_superuser or user.is_staff:
         return True
     return user.groups.filter(name__in=['Approver', 'कार्यालय प्रमुख', 'स्वीकृतकर्ता']).exists()
+
+
+def is_attendance_user(user):
+    """Checks if the user has Attendance Record (हाजिरी फाँट / प्रशासन) privileges."""
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser or user.is_staff:
+        return True
+    return user.groups.filter(name__in=['Attendance', 'हाजिरी', 'प्रशासन', 'हाजिरी शाखा']).exists()
 
 
 def admin_required(view_func):
@@ -285,10 +294,12 @@ def dashboard(request):
         my_orders = orders.filter(created_by=user).order_by('-id')
 
     finance_mode = is_finance_user(user)
+    approver_mode = is_approver(user)
+    attendance_mode = is_attendance_user(user)
 
     # Action Queues
     # 1. Pending Approval Queue (Approving officer review: status='PENDING')
-    if admin_mode:
+    if admin_mode or approver_mode:
         pending_approval_orders = TravelOrder.objects.filter(status='PENDING').select_related('employee', 'office_ref', 'created_by').order_by('-id')
     else:
         pending_approval_orders = my_orders.filter(status='PENDING')
@@ -299,8 +310,14 @@ def dashboard(request):
     else:
         pending_registration_orders = my_orders.filter(status='APPROVED')
 
-    # 3. Fully Registered Orders (status='REGISTERED' or 'FINANCE_CLEARED')
-    registered_orders = orders.filter(status__in=['REGISTERED', 'FINANCE_CLEARED']).order_by('-id')
+    # 3. Pending Attendance Record Queue (Attendance Clerk: status='REGISTERED')
+    if admin_mode or attendance_mode:
+        pending_attendance_orders = TravelOrder.objects.filter(status='REGISTERED').select_related('employee', 'office_ref', 'created_by').order_by('-id')
+    else:
+        pending_attendance_orders = my_orders.filter(status='REGISTERED')
+
+    # 4. Fully Registered / Completed Orders
+    registered_orders = orders.filter(status__in=['REGISTERED', 'ATTENDANCE_RECORDED', 'FINANCE_CLEARED']).order_by('-id')
 
     bills = TravelBill.objects.filter(travel_order__in=accessible_orders).select_related(
         'travel_order', 'travel_order__employee', 'travel_order__office_ref'
@@ -756,7 +773,9 @@ def travel_order_pdf(request, pk):
     return render(request, 'travel_order.html', {
         'record': order,
         'is_admin': is_admin(request.user),
-        'is_finance': is_finance_user(request.user)
+        'is_finance': is_finance_user(request.user),
+        'is_approver': is_approver(request.user),
+        'is_attendance': is_attendance_user(request.user),
     })
 
 
@@ -924,8 +943,9 @@ def order_workflow_action(request, pk, action):
     admin_mode = is_admin(user)
     finance_mode = is_finance_user(user)
     approver_mode = is_approver(user)
+    attendance_mode = is_attendance_user(user)
 
-    if not admin_mode and not finance_mode and not approver_mode and not user_can_access_order(user, order):
+    if not admin_mode and not finance_mode and not approver_mode and not attendance_mode and not user_can_access_order(user, order):
         messages.error(request, "तपाईंलाई यो कार्य गर्ने अनुमति छैन।")
         return redirect(f'/order/{order.id}/')
 
@@ -972,6 +992,17 @@ def order_workflow_action(request, pk, action):
         order.save()
         messages.success(request, f"भ्रमण आदेश #{order.id} दर्ता भई आदेश नं. '{order.order_number}' कायम भयो।")
 
+    elif action == 'record_attendance':
+        if not (admin_mode or is_attendance_user(user)):
+            messages.error(request, "हाजिरी खातामा जनाउने अधिकार हाजिरी फाँट / प्रशासन शाखालाई मात्र छ।")
+            return redirect(f'/order/{order.id}/')
+        if order.status != 'REGISTERED':
+            messages.error(request, "दर्ता अधिकारीबाट भ्रमण आदेश दर्ता भएपछि मात्र हाजिरी खातामा जनाउन मिल्छ।")
+            return redirect(f'/order/{order.id}/')
+        order.status = 'ATTENDANCE_RECORDED'
+        order.save()
+        messages.success(request, f"भ्रमण आदेश #{order.id} (आदेश नं. {order.order_number}) हाजिरी खातामा सफलतापूर्वक जनाइयो।")
+
     elif action == 'reject':
         if not (admin_mode or finance_mode or user.is_staff):
             messages.error(request, "भ्रमण आदेश अस्वीकृत गर्ने अनुमति छैन।")
@@ -990,6 +1021,63 @@ def order_workflow_action(request, pk, action):
 
     next_url = request.GET.get('next') or request.META.get('HTTP_REFERER') or f'/order/{order.id}/'
     return redirect(next_url)
+
+
+@login_required
+def delete_order_view(request, pk):
+    """STRICT ADMIN ONLY: Only System Administrator (Admin) can delete travel orders."""
+    if not is_admin(request.user):
+        messages.error(request, "भ्रमण आदेश मेटाउने (Delete) अधिकार व्यवस्थापक (System Admin) लाई मात्र छ।")
+        return redirect(f'/order/{pk}/')
+    order = get_object_or_404(TravelOrder, pk=pk)
+    fy = order.fiscal_year
+    off_ref = order.office_ref
+    num = order.order_number or f"#{order.id}"
+    order.delete()
+
+    # Recalculate max_in_db and sync sequence table counter
+    orders = TravelOrder.objects.filter(Q(fiscal_year=fy) | Q(fiscal_year=to_english_digits(fy)))
+    if off_ref:
+        orders = orders.filter(office_ref=off_ref)
+    max_in_db = 0
+    for o in orders:
+        if o.order_number:
+            eng_digits = re.findall(r'\d+', to_english_digits(str(o.order_number)))
+            if eng_digits:
+                try:
+                    val = int(eng_digits[0])
+                    if val > max_in_db:
+                        max_in_db = val
+                except ValueError:
+                    pass
+    FiscalYearSequence.objects.filter(fiscal_year=normalize_nepali_fiscal_year(fy), office_ref=off_ref).update(last_number=max_in_db)
+
+    messages.success(request, f"भ्रमण आदेश '{num}' सफलतापूर्वक मेटाइयो।")
+    return redirect('/')
+
+
+@login_required
+def delete_bill_view(request, pk):
+    """STRICT ADMIN ONLY: Only System Administrator (Admin) can delete travel bills."""
+    if not is_admin(request.user):
+        messages.error(request, "भ्रमण खर्च बिल मेटाउने (Delete) अधिकार व्यवस्थापक (System Admin) लाई मात्र छ।")
+        return redirect(f'/bill/{pk}/')
+    bill = get_object_or_404(TravelBill, pk=pk)
+    bill.delete()
+    messages.success(request, f"भ्रमण खर्च बिल सफलतापूर्वक मेटाइयो।")
+    return redirect('/')
+
+
+@login_required
+def delete_report_view(request, pk):
+    """STRICT ADMIN ONLY: Only System Administrator (Admin) can delete travel reports."""
+    if not is_admin(request.user):
+        messages.error(request, "भ्रमण प्रतिवेदन मेटाउने (Delete) अधिकार व्यवस्थापक (System Admin) लाई मात्र छ।")
+        return redirect(f'/report/{pk}/')
+    report = get_object_or_404(TravelReport, pk=pk)
+    report.delete()
+    messages.success(request, f"भ्रमण प्रतिवेदन सफलतापूर्वक मेटाइयो।")
+    return redirect('/')
 
 
 @require_GET

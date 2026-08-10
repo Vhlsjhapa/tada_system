@@ -325,28 +325,26 @@ class TravelOrder(models.Model):
                         defaults={'last_number': 0}
                     )
                     
-                    # If created or last_number is 0, initialize from existing TravelOrders
-                    if created or seq.last_number == 0:
-                        orders = cls.objects.filter(
-                            Q(fiscal_year=fy) | Q(fiscal_year=to_english_digits(fy))
-                        )
-                        if office_ref:
-                            orders = orders.filter(office_ref=office_ref)
-                        
-                        max_in_db = 0
-                        for o in orders:
-                            if o.order_number:
-                                eng_digits = re.findall(r'\d+', to_english_digits(str(o.order_number)))
-                                if eng_digits:
-                                    try:
-                                        num = int(eng_digits[0])
-                                        if num > max_in_db:
-                                            max_in_db = num
-                                    except ValueError:
-                                        pass
-                        if max_in_db > seq.last_number:
-                            seq.last_number = max_in_db
+                    # Always synchronize seq.last_number with actual max_in_db from active orders
+                    orders = cls.objects.filter(
+                        Q(fiscal_year=fy) | Q(fiscal_year=to_english_digits(fy))
+                    )
+                    if office_ref:
+                        orders = orders.filter(office_ref=office_ref)
                     
+                    max_in_db = 0
+                    for o in orders:
+                        if o.order_number:
+                            eng_digits = re.findall(r'\d+', to_english_digits(str(o.order_number)))
+                            if eng_digits:
+                                try:
+                                    num = int(eng_digits[0])
+                                    if num > max_in_db:
+                                        max_in_db = num
+                                except ValueError:
+                                    pass
+                    
+                    seq.last_number = max_in_db
                     seq.last_number += 1
                     seq.save(update_fields=['last_number', 'updated_at'])
                     return to_nepali_digits(f"{seq.last_number:03d}")

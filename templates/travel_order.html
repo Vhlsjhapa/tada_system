@@ -173,7 +173,7 @@
         <button onclick="window.print()" class="btn-print">🖨️ राष्ट्रिय भ्रमण आदेश प्रिन्ट गर्नुहोस्</button>
 
         {% if record.status == 'PENDING' %}
-            {% if is_admin or request.user.is_staff %}
+            {% if is_admin or is_approver %}
                 <a href="/order/{{ record.id }}/action/approve/" style="margin-left: 10px; background:#dcfce7; color:#15803d; padding: 7px 16px; border:1px solid #86efac; border-radius:6px; text-decoration:none; font-weight:700; font-size:13.5px; display:inline-flex; align-items:center; gap:5px;">
                     ✅ भ्रमण स्वीकृत गर्नुहोस् (Approve Order)
                 </a>
@@ -185,17 +185,34 @@
         {% elif record.status == 'APPROVED' %}
             {% if is_admin or is_finance %}
                 <a href="/order/{{ record.id }}/action/register/" style="margin-left: 10px; background:#2563eb; color:white; padding: 7px 16px; border-radius:6px; text-decoration:none; font-weight:700; font-size:13.5px; display:inline-flex; align-items:center; gap:5px;">
-                    🔢 दर्ता गरी आदेश नं. कायम गर्नुहोस् (आर्थिक प्रशासन / दर्ता शाखा)
+                    🔢 दर्ता गरी आदेश नं. कायम गर्नुहोस् (दर्ता / लेखा शाखा)
                 </a>
             {% else %}
                 <span style="margin-left: 10px; background:#dbeafe; color:#1e40af; padding: 7px 14px; border:1px solid #bfdbfe; border-radius:6px; font-weight:600; font-size:13px;">
-                    ✅ कार्यालय प्रमुखद्वारा स्वीकृत (दर्ता फाँट / आर्थिक प्रशासनमा विचाराधीन)
+                    ✅ कार्यालय प्रमुखद्वारा स्वीकृत (दर्ता फाँटमा विचाराधीन)
                 </span>
             {% endif %}
+        {% elif record.status == 'REGISTERED' %}
+            {% if is_admin or is_attendance %}
+                <a href="/order/{{ record.id }}/action/record_attendance/" style="margin-left: 10px; background:#7c3aed; color:white; padding: 7px 16px; border-radius:6px; text-decoration:none; font-weight:700; font-size:13.5px; display:inline-flex; align-items:center; gap:5px;">
+                    📋 हाजिरी खातामा जनाउनुहोस् (हाजिरी फाँट / प्रशासन)
+                </a>
+            {% else %}
+                <span style="margin-left: 10px; background:#ede9fe; color:#6d28d9; padding: 7px 14px; border:1px solid #ddd6fe; border-radius:6px; font-weight:600; font-size:13px;">
+                    🎉 दर्ता सम्पन्न (आदेश नं. {{ record.order_number }}) - हाजिरी दाखिला बाँकी
+                </span>
+            {% endif %}
+        {% elif record.status == 'ATTENDANCE_RECORDED' %}
+            <span style="margin-left: 10px; background:#dcfce7; color:#15803d; padding: 7px 14px; border:1px solid #86efac; border-radius:6px; font-weight:700; font-size:13px;">
+                ✍️ हाजिरी खातामा जनाइसकेको (सम्पन्न)
+            </span>
         {% endif %}
 
-        <a href="/order/{{ record.id }}/edit/" style="margin-left: 10px; background:#f1f5f9; color:#1e293b; padding: 7px 14px; border:1px solid #cbd5e1; border-radius:6px; text-decoration:none; font-weight:600; font-size:13.5px; display:inline-flex; align-items:center; gap:5px;">✏️ आदेश सच्याउनुहोस् (Edit)</a>
+        <a href="/order/{{ record.id }}/edit/" style="margin-left: 10px; background:#f1f5f9; color:#1e293b; padding: 7px 14px; border:1px solid #cbd5e1; border-radius:6px; text-decoration:none; font-weight:600; font-size:13.5px; display:inline-flex; align-items:center; gap:5px;">✏️ सच्याउनुहोस् (Edit)</a>
         <a href="/order/{{ record.id }}/nivedan/" style="margin-left: 10px; background:#fef3c7; color:#92400e; padding: 7px 14px; border:1px solid #fde68a; border-radius:6px; text-decoration:none; font-weight:600; font-size:13.5px; display:inline-flex; align-items:center; gap:5px;">📝 पेस्की निवेदन</a>
+        {% if is_admin %}
+        <a href="/order/{{ record.id }}/delete/" onclick="return confirm('के तपाईं साँच्चै यो भ्रमण आदेश मेटाउन चाहनुहुन्छ?');" style="margin-left: 10px; background:#fee2e2; color:#b91c1c; padding: 7px 14px; border:1px solid #fca5a5; border-radius:6px; text-decoration:none; font-weight:700; font-size:13.5px; display:inline-flex; align-items:center; gap:5px;">🗑️ मेटाउनुहोस् (Delete)</a>
+        {% endif %}
         <a href="/" style="margin-left: 15px; color:#1e40af; text-decoration:none; font-weight:600;">⬅️ ड्यासबोर्डमा फर्कनुहोस्</a>
     </div>
 

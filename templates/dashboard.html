@@ -887,6 +887,65 @@
     </div>
     {% endif %}
 
+    <!-- WORKFLOW QUEUE 3: Pending Attendance Record Queue (Attendance Desk Allocation) -->
+    {% if pending_attendance_orders %}
+    <div class="section-card" style="border: 2px solid #8b5cf6; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);">
+        <div class="section-header" style="background:#f5f3ff; border-bottom:1px solid #ddd6fe;">
+            <div class="section-title" style="color:#6d28d9;">
+                <span>📋 हाजिरी खातामा जनाउन बाँकी भ्रमण आदेशहरू (Pending Attendance Entry)</span>
+                <span style="font-size:12px; background:#ede9fe; color:#6d28d9; padding:3px 10px; border-radius:12px; border:1px solid #ddd6fe;">
+                    {{ pending_attendance_nepali }} थान हाजिरी जनाउन बाँकी
+                </span>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr style="background:#ede9fe;">
+                        <th>आदेश नं.</th>
+                        <th>दर्ता मिति</th>
+                        <th>कर्मचारीको नाम</th>
+                        <th>पद</th>
+                        <th>भ्रमण स्थल</th>
+                        <th>अवधि</th>
+                        <th>स्थिति</th>
+                        <th style="min-width:240px;">हाजिरी कार्य (Attendance Desk Action)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ord in pending_attendance_orders %}
+                    <tr>
+                        <td><b>{{ ord.order_number }}</b></td>
+                        <td>{{ ord.admin_date|default:ord.order_date }}</td>
+                        <td><b>{{ ord.person }}</b></td>
+                        <td>{{ ord.designation }}</td>
+                        <td>{{ ord.destination }}</td>
+                        <td>{{ ord.start_date }} देखि {{ ord.end_date }}</td>
+                        <td>
+                            <span style="background:#ede9fe; color:#6d28d9; padding:3px 8px; border-radius:4px; font-size:11.5px; font-weight:700;">
+                                🎉 दर्ता सम्पन्न (हाजिरी बाँकी)
+                            </span>
+                        </td>
+                        <td>
+                            {% if is_admin or is_attendance %}
+                            <a href="/order/{{ ord.pk }}/action/record_attendance/?next=/" class="btn-table" style="background:#7c3aed; color:white; font-weight:700; padding:6px 14px; font-size:12px; border-radius:6px;">
+                                📋 हाजिरी खातामा जनाउनुहोस्
+                            </a>
+                            {% else %}
+                            <span style="color:#64748b; font-size:11.5px;">हाजिरी/प्रशासन फाँटमा विचाराधीन</span>
+                            {% endif %}
+                            {% if is_admin %}
+                            <a href="/order/{{ ord.pk }}/delete/" class="btn-table" onclick="return confirm('के तपाईं यो आदेश मेटाउन चाहनुहुन्छ?');" style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; font-size:11.5px;">🗑️</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Section 1: Travel Orders Table -->
     <div class="section-card">
         <div class="section-header">
@@ -909,14 +968,14 @@
                         <th>भ्रमण स्थल</th>
                         <th>भ्रमण अवधि</th>
                         <th>पेस्की रकम</th>
-                        <th style="min-width:320px;">कार्यहरू (Print & Application Actions)</th>
+                        <th style="min-width:350px;">कार्यहरू (Print & Actions)</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% if orders %}
                         {% for ord in orders %}
                         <tr>
-                            <td><b>{{ ord.order_number }}</b></td>
+                            <td><b>{{ ord.order_number|default:"-" }}</b></td>
                             <td>{{ ord.order_date }}</td>
                             <td><b>{{ ord.person }}</b> ({{ ord.designation }})</td>
                             <td>{{ ord.code_no|default:"-" }}</td>
@@ -939,6 +998,10 @@
                                     <a href="/report/{{ ord.report.pk }}/" target="_blank" class="btn-table btn-print-report">🖨️ प्रतिवेदन</a>
                                 {% else %}
                                     <a href="/report/new/?order_id={{ ord.pk }}" class="btn-table" style="background:#f3e8ff; color:#7e22ce; border:1px dashed #a855f7;">➕ प्रतिवेदन</a>
+                                {% endif %}
+
+                                {% if is_admin %}
+                                    <a href="/order/{{ ord.pk }}/delete/" class="btn-table" onclick="return confirm('के तपाईं साँच्चै यो भ्रमण आदेश मेटाउन चाहनुहुन्छ?');" style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; font-size:11.5px;">🗑️ मेटाउनुहोस्</a>
                                 {% endif %}
                             </td>
                         </tr>
