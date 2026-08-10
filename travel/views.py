@@ -48,12 +48,31 @@ def ensure_logo_synced():
         pass
 
 def is_admin(user):
-    """Checks if the user has System Administrator privileges (superuser or Admin group)."""
+    """Checks if the user has administrative privileges (superuser, staff, or Admin group)."""
     if not user.is_authenticated:
         return False
-    if user.is_superuser:
+    if user.is_superuser or user.is_staff:
         return True
     return user.groups.filter(name__in=['Admin', 'प्रशासक', 'व्यवस्थापक']).exists()
+
+...
+@login_required
+def reset_all_records_view(request):
+    """View to wipe all travel orders, bills, reports and reset sequence to 0."""
+    if not (is_admin(request.user) or is_finance_user(request.user)):
+        messages.error(request, "डाटा रिसेट गर्ने अधिकार व्यवस्थापक वा आर्थिक प्रशासनलाई मात्र छ।")
+        return redirect('/')
+
+    if request.method == 'POST':
+        reports_count, _ = TravelReport.objects.all().delete()
+        bills_count, _ = TravelBill.objects.all().delete()
+        orders_count, _ = TravelOrder.objects.all().delete()
+        FiscalYearSequence.objects.all().update(last_number=0)
+        messages.success(
+            request, 
+            f"✅ सम्पूर्ण पुराना डाटाहरू ({orders_count} आदेश, {bills_count} बिल, {reports_count} प्रतिवेदन) मेटाई क्रमिक आदेश नम्बर ००१ बाट सुरु हुने गरी रिसेट गरियो।"
+        )
+    return redirect('/')
 
 
 def is_finance_user(user):
@@ -619,19 +638,7 @@ def manage_users(request):
         'is_admin': True,
     })
 
-@admin_required
-def reset_all_records_view(request):
-    """Admin-only view to wipe all travel orders, bills, reports and reset sequence to 0."""
-    if request.method == 'POST':
-        reports_count, _ = TravelReport.objects.all().delete()
-        bills_count, _ = TravelBill.objects.all().delete()
-        orders_count, _ = TravelOrder.objects.all().delete()
-        FiscalYearSequence.objects.all().update(last_number=0)
-        messages.success(
-            request, 
-            f"✅ सम्पूर्ण पुराना डाटाहरू ({orders_count} आदेश, {bills_count} बिल, {reports_count} प्रतिवेदन) मेटाई क्रमिक आदेश नम्बर ००१ बाट सुरु हुने गरी रिसेट गरियो।"
-        )
-    return redirect('/')
+
 
 
 # ==============================================================================
