@@ -650,9 +650,11 @@
             <span class="role-pill">
                 {% if is_admin %}⭐ व्यवस्थापक (Admin){% elif is_finance %}💼 आर्थिक प्रशासन (Finance){% else %}👤 कर्मचारी (User){% endif %}
             </span>
+            {% if is_admin %}
             <a href="/?reset=1" onclick="return confirm('के तपाईं पुराना सम्पूर्ण भ्रमण आदेश, बिल र प्रतिवेदनहरू मेटेर नयाँ दर्ता अटो नम्बर ००१ मा रिसेट गर्न चाहनुहुन्छ?');" style="background:#dc2626; color:white; padding:5px 12px; border-radius:6px; font-weight:700; text-decoration:none; font-size:12px; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 4px rgba(220,38,38,0.25);">
                 🗑️ डाटा रिसेट (००१ बाट सुरु)
             </a>
+            {% endif %}
         </div>
     </div>
 
@@ -668,13 +670,14 @@
             {% endif %}
             {% if is_admin %}
             <a href="/offices/" style="font-size:12.5px; color:#1e40af; font-weight:700; text-decoration:none;">🔄 कार्यालय परिवर्तन ➔</a>
-            {% endif %}
+            
             <form method="POST" action="/reset-all-records/" style="display:inline;" onsubmit="return confirm('के तपाईं साँच्चै पुराना सम्पूर्ण भ्रमण आदेश, बिल र प्रतिवेदनहरू मेटेर अटो नम्बर ००१ बाट सुरु गर्न चाहनुहुन्छ?');">
                 {% csrf_token %}
                 <button type="submit" style="background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; padding:4px 10px; border-radius:5px; font-weight:700; font-size:12px; cursor:pointer;">
                     🗑️ डाटा मेटी अटो नम्बर ००१ रिसेट
                 </button>
             </form>
+            {% endif %}
         </div>
     </div>
 
