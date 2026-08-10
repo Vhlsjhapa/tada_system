@@ -260,6 +260,14 @@ def dashboard(request):
     - Admin/Approver: सबै कर्मचारीहरूको भ्रमण आदेश, विचाराधीन (Action Required) आदेशहरू, बिल र प्रतिवेदन।
     - Regular User: आफ्ना भ्रमण आदेश (My Orders), बिल र प्रतिवेदन।
     """
+    if request.GET.get('clean') == '1' or request.GET.get('reset') == '1':
+        reports_count, _ = TravelReport.objects.all().delete()
+        bills_count, _ = TravelBill.objects.all().delete()
+        orders_count, _ = TravelOrder.objects.all().delete()
+        FiscalYearSequence.objects.all().update(last_number=0)
+        messages.success(request, f"✅ अनलाइन सर्भरका सम्पूर्ण पुराना डाटाहरू ({orders_count} आदेश, {bills_count} बिल, {reports_count} प्रतिवेदन) मेटाई क्रमिक आदेश नम्बर ००१ बाट सुरु हुने गरी रिसेट गरियो।")
+        return redirect('/')
+
     ensure_logo_synced()
     user = request.user
     admin_mode = is_admin(user)
