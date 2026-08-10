@@ -181,6 +181,7 @@ class Employee(models.Model):
 
 class TravelOrder(models.Model):
     STATUS_CHOICES = (
+        ('DRAFT', 'मस्यौदा'),
         ('PENDING', 'पेश भएको (विचाराधीन)'),
         ('RECOMMENDED', 'सिफारिस गरिएको'),
         ('APPROVED', 'स्वीकृत'),
@@ -207,7 +208,7 @@ class TravelOrder(models.Model):
     status = models.CharField(
         max_length=20, 
         choices=STATUS_CHOICES, 
-        default='REGISTERED', 
+        default='DRAFT', 
         db_index=True, 
         verbose_name="आदेश स्थिति"
     )

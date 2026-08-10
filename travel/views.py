@@ -61,6 +61,10 @@ def is_admin(user):
 @login_required
 def reset_now_direct(request):
     """Direct GET/POST endpoint to wipe all travel orders/bills/reports and reset sequence to 0."""
+    if not is_admin(request.user):
+        messages.error(request, "यो कार्य गर्नको लागि तपाईँलाई अनुमति छैन (Admin only)।")
+        return redirect('/')
+        
     reports_count, _ = TravelReport.objects.all().delete()
     bills_count, _ = TravelBill.objects.all().delete()
     orders_count, _ = TravelOrder.objects.all().delete()
@@ -325,8 +329,8 @@ def dashboard(request):
     else:
         pending_approval_orders = my_orders.filter(status='PENDING')
 
-    # 2. Pending Registration Queue (Finance/Register desk allocation: status='APPROVED')
-    if admin_mode or finance_mode:
+    # 2. Pending Registration Queue (Attendance/Register desk allocation: status='APPROVED')
+    if admin_mode or attendance_mode:
         pending_registration_orders = TravelOrder.objects.filter(status='APPROVED').select_related('employee', 'office_ref', 'created_by').order_by('-id')
     else:
         pending_registration_orders = my_orders.filter(status='APPROVED')
@@ -953,6 +957,7 @@ def api_order_detail(request, pk):
 def order_workflow_action(request, pk, action):
     """
     आदेश कार्यप्रवाह (Workflow Transition Action):
+    - submit: प्रयोगकर्ताद्वारा पेश (DRAFT -> PENDING)
     - recommend: सिफारिसकर्ताद्वारा सिफारिस (PENDING -> RECOMMENDED)
     - approve: स्वीकृतकर्ताद्वारा स्वीकृत (RECOMMENDED/PENDING -> APPROVED)
     - clear_finance: आर्थिक प्रशासनद्वारा भुक्तानी फछ्र्यौट (APPROVED/REGISTERED -> FINANCE_CLEARED)
@@ -972,7 +977,15 @@ def order_workflow_action(request, pk, action):
 
     today_bs = get_today_bs()
 
-    if action == 'recommend':
+    if action == 'submit':
+        if order.status != 'DRAFT':
+            messages.error(request, "यो भ्रमण आदेश पहिल्यै पेश भइसकेको छ।")
+        else:
+            order.status = 'PENDING'
+            order.save()
+            messages.success(request, f"भ्रमण आदेश #{order.id} स्वीकृतिका लागि पेश गरियो।")
+
+    elif action == 'recommend':
         if not admin_mode and order.created_by == user and not user.is_staff:
             messages.error(request, "आफ्नो भ्रमण आदेश आफैंले सिफारिस गर्न मिल्दैन।")
             return redirect(f'/order/{order.id}/')
@@ -985,7 +998,7 @@ def order_workflow_action(request, pk, action):
 
     elif action == 'approve':
         if not (admin_mode or approver_mode):
-            messages.error(request, "भ्रमण आदेश स्वीकृत गर्ने अधिकार कार्यालय प्रमुख / प्रशासकलाई मात्र छ।")
+            messages.error(request, "भ्रमण आदेश स्वीकृत गर्ने अधिकार कार्यालय प्रमुखलाई मात्र छ।")
             return redirect(f'/order/{order.id}/')
         order.status = 'APPROVED'
         order.approved_by = user
@@ -1003,8 +1016,8 @@ def order_workflow_action(request, pk, action):
         messages.success(request, f"भ्रमण आदेश #{order.id} को आर्थिक प्रशासन फछ्र्यौट सम्पन्न भयो।")
 
     elif action == 'register':
-        if not (admin_mode or finance_mode):
-            messages.error(request, "भ्रमण आदेश दर्ता गरी आदेश नं. कायम गर्ने अधिकार लेखा / आर्थिक प्रशासन शाखा (Finance) लाई मात्र छ।")
+        if not (admin_mode or attendance_mode):
+            messages.error(request, "भ्रमण आदेश दर्ता गरी आदेश नं. कायम गर्ने अधिकार दर्ता/चलानी फाँटलाई मात्र छ।")
             return redirect(f'/order/{order.id}/')
         if order.status not in ['APPROVED', 'FINANCE_CLEARED']:
             messages.error(request, "कार्यालय प्रमुख / स्वीकृत गर्ने पदाधिकारीले भ्रमण आदेश स्वीकृत (Approve) गरेपछि मात्र दर्ता गरी आदेश नं. कायम गर्न मिल्छ।")

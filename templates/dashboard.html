@@ -871,12 +871,12 @@
                             </span>
                         </td>
                         <td>
-                            {% if is_admin or is_finance %}
+                            {% if is_admin or is_attendance %}
                             <a href="/order/{{ ord.pk }}/action/register/?next=/" onclick="return promptRegisterNumber('{{ ord.pk }}');" class="btn-table" style="background:#2563eb; color:white; font-weight:700; padding:6px 14px; font-size:12px; border-radius:6px;">
                                 🔢 दर्ता गरी आदेश नं. कायम गर्नुहोस्
                             </a>
                             {% else %}
-                            <span style="color:#64748b; font-size:11.5px;">आर्थिक प्रशासन/दर्ता शाखामा विचाराधीन</span>
+                            <span style="color:#64748b; font-size:11.5px;">दर्ता शाखामा विचाराधीन</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -984,9 +984,19 @@
                             <td>रु. {{ ord.advance_amount|default:"०" }}</td>
                             <td>
                                 <a href="/order/{{ ord.pk }}/edit/" class="btn-table btn-edit-action">✏️ सच्याउनुहोस्</a>
-                                <a href="/order/{{ ord.pk }}/" target="_blank" class="btn-table btn-print-order">🖨️ आदेश (म.ले.प. २२३)</a>
-                                <a href="/order/{{ ord.pk }}/nivedan/" target="_blank" class="btn-table btn-print-nivedan">📝 पेस्की निवेदन</a>
                                 
+                                {% if ord.status == 'DRAFT' %}
+                                    <a href="/order/{{ ord.pk }}/action/submit/?next=/" class="btn-table" style="background:#fef3c7; color:#92400e; border:1px solid #fde68a;">📤 स्वीकृतिका लागि पेश गर्नुहोस</a>
+                                {% endif %}
+
+                                {% if ord.status == 'REGISTERED' or ord.status == 'FINANCE_CLEARED' or ord.status == 'ATTENDANCE_RECORDED' %}
+                                    <a href="/order/{{ ord.pk }}/" target="_blank" class="btn-table btn-print-order">🖨️ आदेश (म.ले.प. २२३)</a>
+                                    <a href="/order/{{ ord.pk }}/nivedan/" target="_blank" class="btn-table btn-print-nivedan">📝 पेस्की निवेदन</a>
+                                {% else %}
+                                    <span style="color:#94a3b8; font-size:11px; display:inline-block; padding:4px;">(दर्ता पछि प्रिन्ट गर्न मिल्ने)</span>
+                                {% endif %}
+                                
+
                                 {% if ord.bill %}
                                     <a href="/bill/{{ ord.bill.pk }}/" target="_blank" class="btn-table btn-print-bill">🖨️ बिल (म.ले.प. २२४)</a>
                                     <a href="/bill/{{ ord.bill.pk }}/nivedan/" target="_blank" class="btn-table btn-print-nivedan" style="background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0;">📝 भुक्तानी निवेदन</a>
