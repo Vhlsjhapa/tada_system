@@ -601,9 +601,16 @@
                 }
             }
 
+    function getTodayBsFormatted() {
+        const todayBs = adToBs(new Date());
+        const mStr = String(todayBs.month + 1).padStart(2, '0');
+        const dStr = String(todayBs.day).padStart(2, '0');
+        return `${toNepaliDigits(todayBs.year)}/${toNepaliDigits(mStr)}/${toNepaliDigits(dStr)}`;
+    }
+
             const todayBs = adToBs(new Date());
 
-            if (input.value) {
+            if (input.value && !input.value.includes('२०८२')) {
                 const parts = toEnglishDigits(input.value).split('/');
                 if (parts.length === 3) {
                     this.activeYear = parseInt(parts[0], 10) || (todayBs ? todayBs.year : 2083);
@@ -617,11 +624,20 @@
                     this.activeYear = pMin.year;
                     this.activeMonth = pMin.month - 1;
                     this.selectedDate = { year: pMin.year, month: pMin.month - 1, day: pMin.day };
+                    const mStr = String(pMin.month).padStart(2, '0');
+                    const dStr = String(pMin.day).padStart(2, '0');
+                    input.value = `${toNepaliDigits(pMin.year)}/${toNepaliDigits(mStr)}/${toNepaliDigits(dStr)}`;
                 }
             } else {
                 this.activeYear = todayBs ? todayBs.year : 2083;
                 this.activeMonth = todayBs ? todayBs.month : 3;
-                this.selectedDate = todayBs || { year: 2083, month: 3, day: 23 };
+                this.selectedDate = todayBs || { year: 2083, month: 3, day: 25 };
+                const todayFormatted = getTodayBsFormatted();
+                input.value = todayFormatted;
+                const weekday = getBSWeekday(this.activeYear, this.activeMonth, this.selectedDate.day);
+                this.updateInputHelper(input, `${NEPALI_MONTHS[this.activeMonth]} ${toNepaliDigits(this.selectedDate.day)} गते, ${NEPALI_DAYS_FULL[weekday]}`);
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+                input.dispatchEvent(new Event('input', { bubbles: true }));
             }
 
             const yearSel = this.popup.querySelector('#nepCalYearSelect');
@@ -667,8 +683,22 @@
                 input.dataset.nepaliAttached = "true";
                 input.setAttribute('autocomplete', 'off');
                 input.setAttribute('readonly', 'readonly');
-                input.setAttribute('placeholder', '२०८३/०४/२०');
+                input.setAttribute('placeholder', '२०८३/०४/२५');
                 
+                const isPrimaryInput = Boolean(
+                    input.name && (
+                        input.name.includes('order_date') || 
+                        input.name.includes('start_date') || 
+                        input.name.includes('end_date') || 
+                        input.name.includes('bill_date') || 
+                        input.name.includes('report_date')
+                    )
+                );
+
+                if (isPrimaryInput && (!input.value || input.value.includes('२०८२'))) {
+                    input.value = getTodayBsFormatted();
+                }
+
                 // Show existing day helper if date present
                 if (input.value) {
                     const parts = toEnglishDigits(input.value).split('/');
