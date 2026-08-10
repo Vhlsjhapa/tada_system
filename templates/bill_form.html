@@ -211,7 +211,7 @@
             </div>
             <div class="form-group">
                 <label>बिल पेश गरेको मिति (नेपाली पात्रो) *</label>
-                <input type="text" name="bill_date" id="id_bill_date" class="nepali-date-picker" value="{% if form_data.bill_date %}{{ form_data.bill_date }}{% else %}२०८२/०४/२५{% endif %}" required {% if not orders %}disabled{% endif %}>
+                <input type="text" name="bill_date" id="id_bill_date" class="nepali-date-picker" value="{% if form_data.bill_date %}{{ form_data.bill_date }}{% else %}{{ today_bs|default:'२०८३/०४/२५' }}{% endif %}" required {% if not orders %}disabled{% endif %}>
                 <small style="font-size:11px; color:#64748b; margin-top:2px;">(भ्रमण आदेशको अन्तिम मिति वा सो भन्दा पछिको मिति हुनुपर्छ)</small>
             </div>
         </div>

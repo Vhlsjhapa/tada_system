@@ -1420,6 +1420,7 @@ def bill_form_view(request):
                 'form_data': request.POST,
                 'preselected_order_id': order_id,
                 'is_admin': admin_mode,
+                'today_bs': get_today_bs(),
             })
 
         # 3. Validate Travel Bill Item Dates against Order bounds
@@ -1457,6 +1458,7 @@ def bill_form_view(request):
                 'form_data': request.POST,
                 'preselected_order_id': order_id,
                 'is_admin': admin_mode,
+                'today_bs': get_today_bs(),
             })
 
         address = request.POST.get('address', '').strip()
@@ -1567,6 +1569,7 @@ def bill_form_view(request):
         'orders': orders,
         'preselected_order_id': preselected_order_id,
         'is_admin': admin_mode,
+        'today_bs': get_today_bs(),
     })
 
 
@@ -1634,6 +1637,7 @@ def report_form_view(request):
         'orders': orders,
         'preselected_order_id': preselected_order_id,
         'is_admin': admin_mode,
+        'today_bs': get_today_bs(),
     })
 
 

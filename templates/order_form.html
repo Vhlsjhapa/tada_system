@@ -251,11 +251,11 @@
         <div class="form-grid">
             <div class="form-group">
                 <label>भ्रमण शुरु मिति (नेपाली पात्रो) *</label>
-                <input type="text" id="id_start_date" name="start_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.start_date }}{% elif order %}{{ order.start_date }}{% else %}२०८२/०४/२१{% endif %}" required placeholder="२०८२/०४/२१">
+                <input type="text" id="id_start_date" name="start_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.start_date }}{% elif order %}{{ order.start_date }}{% else %}{{ today_bs|default:'२०८३/०४/२५' }}{% endif %}" required placeholder="२०८३/०४/२५">
             </div>
             <div class="form-group">
                 <label>भ्रमण अन्त्य मिति (नेपाली पात्रो) *</label>
-                <input type="text" id="id_end_date" name="end_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.end_date }}{% elif order %}{{ order.end_date }}{% else %}२०८२/०४/२३{% endif %}" required placeholder="२०८२/०४/२३">
+                <input type="text" id="id_end_date" name="end_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.end_date }}{% elif order %}{{ order.end_date }}{% else %}{{ today_bs|default:'२०८३/०४/२५' }}{% endif %}" required placeholder="२०८३/०४/२५">
             </div>
         </div>
 
@@ -306,15 +306,15 @@
         <div class="form-grid">
             <div class="form-group">
                 <label>भ्रमण गर्ने पदाधिकारीको मिति</label>
-                <input type="text" id="id_traveller_date" name="traveller_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.traveller_date }}{% elif order %}{{ order.traveller_date|default:'' }}{% else %}{% endif %}" placeholder="२०८२/०४/२०">
+                <input type="text" id="id_traveller_date" name="traveller_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.traveller_date }}{% elif order %}{{ order.traveller_date|default:'' }}{% else %}{% endif %}" placeholder="२०८३/०४/२५">
             </div>
             <div class="form-group">
                 <label>सिफारिस गर्ने पदाधिकारीको मिति</label>
-                <input type="text" id="id_recommender_date" name="recommender_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.recommender_date }}{% elif order %}{{ order.recommender_date|default:'' }}{% else %}{% endif %}" placeholder="२०८२/०४/२०">
+                <input type="text" id="id_recommender_date" name="recommender_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.recommender_date }}{% elif order %}{{ order.recommender_date|default:'' }}{% else %}{% endif %}" placeholder="२०८३/०४/२५">
             </div>
             <div class="form-group">
                 <label>भ्रमण स्वीकृत गर्ने पदाधिकारीको मिति</label>
-                <input type="text" id="id_approver_date" name="approver_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.approver_date }}{% elif order %}{{ order.approver_date|default:'' }}{% else %}{% endif %}" placeholder="२०८२/०४/२०">
+                <input type="text" id="id_approver_date" name="approver_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.approver_date }}{% elif order %}{{ order.approver_date|default:'' }}{% else %}{% endif %}" placeholder="२०८३/०४/२५">
             </div>
         </div>
 
@@ -325,7 +325,7 @@
             </div>
             <div class="form-group">
                 <label>हाजिरी खातामा जनाएको मिति (प्रशासन शाखा)</label>
-                <input type="text" id="id_admin_date" name="admin_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.admin_date }}{% elif order %}{{ order.admin_date|default:'' }}{% else %}{% endif %}" placeholder="२०८२/०४/२१">
+                <input type="text" id="id_admin_date" name="admin_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.admin_date }}{% elif order %}{{ order.admin_date|default:'' }}{% else %}{% endif %}" placeholder="२०८३/०४/२५">
             </div>
         </div>
 
