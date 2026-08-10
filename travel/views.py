@@ -57,6 +57,20 @@ def is_admin(user):
 
 ...
 @login_required
+def reset_now_direct(request):
+    """Direct GET/POST endpoint to wipe all travel orders/bills/reports and reset sequence to 0."""
+    reports_count, _ = TravelReport.objects.all().delete()
+    bills_count, _ = TravelBill.objects.all().delete()
+    orders_count, _ = TravelOrder.objects.all().delete()
+    FiscalYearSequence.objects.all().update(last_number=0)
+    messages.success(
+        request, 
+        f"✅ अनलाइन सर्भरका सम्पूर्ण पुराना डाटाहरू ({orders_count} आदेश, {bills_count} बिल, {reports_count} प्रतिवेदन) मेटाई क्रमिक आदेश नम्बर ००१ बाट सुरु हुने गरी रिसेट गरियो।"
+    )
+    return redirect('/')
+
+
+@login_required
 def reset_all_records_view(request):
     """View to wipe all travel orders, bills, reports and reset sequence to 0."""
     if not (is_admin(request.user) or is_finance_user(request.user)):
