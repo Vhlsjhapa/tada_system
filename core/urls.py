@@ -19,9 +19,10 @@ urlpatterns = [
     # User Management (प्रयोगकर्ता व्यवस्थापन - Admin Only)
     path('users/', views.manage_users, name='manage_users'),
     
-    # Office Management (कार्यालय व्यवस्थापन - Admin Only)
+    # Office & System Data Management (Admin Only)
     path('offices/', views.manage_offices, name='manage_offices'),
     path('offices/set-default/<int:pk>/', views.set_default_office, name='set_default_office'),
+    path('reset-all-records/', views.reset_all_records_view, name='reset_all_records'),
     
     # PDF / Print Views (म.ले.प. फारामहरू)
     path('order/<int:pk>/', views.travel_order_pdf, name='travel_order_pdf'),

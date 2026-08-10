@@ -183,13 +183,13 @@
                 </span>
             {% endif %}
         {% elif record.status == 'APPROVED' %}
-            {% if is_admin or is_finance or request.user.is_staff %}
+            {% if is_admin or is_finance %}
                 <a href="/order/{{ record.id }}/action/register/" style="margin-left: 10px; background:#2563eb; color:white; padding: 7px 16px; border-radius:6px; text-decoration:none; font-weight:700; font-size:13.5px; display:inline-flex; align-items:center; gap:5px;">
-                    🔢 दर्ता गरी आदेश नं. कायम गर्नुहोस्
+                    🔢 दर्ता गरी आदेश नं. कायम गर्नुहोस् (आर्थिक प्रशासन / दर्ता शाखा)
                 </a>
             {% else %}
                 <span style="margin-left: 10px; background:#dbeafe; color:#1e40af; padding: 7px 14px; border:1px solid #bfdbfe; border-radius:6px; font-weight:600; font-size:13px;">
-                    ✅ कार्यालय प्रमुखद्वारा स्वीकृत (दर्ता बाँकी)
+                    ✅ कार्यालय प्रमुखद्वारा स्वीकृत (दर्ता फाँट / आर्थिक प्रशासनमा विचाराधीन)
                 </span>
             {% endif %}
         {% endif %}

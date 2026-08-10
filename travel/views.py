@@ -48,8 +48,12 @@ def ensure_logo_synced():
         pass
 
 def is_admin(user):
-    """Checks if the user has administrative privileges (staff or superuser)."""
-    return user.is_authenticated and (user.is_staff or user.is_superuser)
+    """Checks if the user has System Administrator privileges (superuser or Admin group)."""
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser:
+        return True
+    return user.groups.filter(name__in=['Admin', 'प्रशासक', 'व्यवस्थापक']).exists()
 
 
 def is_finance_user(user):
@@ -59,6 +63,15 @@ def is_finance_user(user):
     if user.is_superuser:
         return True
     return user.groups.filter(name__in=['Finance', 'आर्थिक प्रशासन', 'लेखा']).exists()
+
+
+def is_approver(user):
+    """Checks if the user has Approver (कार्यालय प्रमुख) privileges."""
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser or user.is_staff:
+        return True
+    return user.groups.filter(name__in=['Approver', 'कार्यालय प्रमुख', 'स्वीकृतकर्ता']).exists()
 
 
 def admin_required(view_func):
@@ -606,6 +619,20 @@ def manage_users(request):
         'is_admin': True,
     })
 
+@admin_required
+def reset_all_records_view(request):
+    """Admin-only view to wipe all travel orders, bills, reports and reset sequence to 0."""
+    if request.method == 'POST':
+        reports_count, _ = TravelReport.objects.all().delete()
+        bills_count, _ = TravelBill.objects.all().delete()
+        orders_count, _ = TravelOrder.objects.all().delete()
+        FiscalYearSequence.objects.all().update(last_number=0)
+        messages.success(
+            request, 
+            f"✅ सम्पूर्ण पुराना डाटाहरू ({orders_count} आदेश, {bills_count} बिल, {reports_count} प्रतिवेदन) मेटाई क्रमिक आदेश नम्बर ००१ बाट सुरु हुने गरी रिसेट गरियो।"
+        )
+    return redirect('/')
+
 
 # ==============================================================================
 # Finance / Admin: Travel Record Register (भ्रमण अभिलेख खाता - Landscape Mode)
@@ -697,7 +724,11 @@ def travel_order_pdf(request, pk):
     if not user_can_access_order(request.user, order):
         messages.error(request, "तपाईंलाई यो भ्रमण आदेश हेर्ने अनुमति छैन।")
         return redirect('/')
-    return render(request, 'travel_order.html', {'record': order, 'is_admin': is_admin(request.user)})
+    return render(request, 'travel_order.html', {
+        'record': order,
+        'is_admin': is_admin(request.user),
+        'is_finance': is_finance_user(request.user)
+    })
 
 
 @login_required
@@ -863,8 +894,9 @@ def order_workflow_action(request, pk, action):
     user = request.user
     admin_mode = is_admin(user)
     finance_mode = is_finance_user(user)
+    approver_mode = is_approver(user)
 
-    if not admin_mode and not finance_mode and not user_can_access_order(user, order):
+    if not admin_mode and not finance_mode and not approver_mode and not user_can_access_order(user, order):
         messages.error(request, "तपाईंलाई यो कार्य गर्ने अनुमति छैन।")
         return redirect(f'/order/{order.id}/')
 
@@ -882,7 +914,7 @@ def order_workflow_action(request, pk, action):
         messages.success(request, f"भ्रमण आदेश #{order.id} सफलतापूर्वक सिफारिस गरियो।")
 
     elif action == 'approve':
-        if not admin_mode:
+        if not (admin_mode or approver_mode):
             messages.error(request, "भ्रमण आदेश स्वीकृत गर्ने अधिकार कार्यालय प्रमुख / प्रशासकलाई मात्र छ।")
             return redirect(f'/order/{order.id}/')
         order.status = 'APPROVED'
@@ -901,8 +933,8 @@ def order_workflow_action(request, pk, action):
         messages.success(request, f"भ्रमण आदेश #{order.id} को आर्थिक प्रशासन फछ्र्यौट सम्पन्न भयो।")
 
     elif action == 'register':
-        if not (admin_mode or finance_mode or user.is_staff):
-            messages.error(request, "भ्रमण आदेश दर्ता गर्ने अधिकार प्रशासन / दर्ता फाँटलाई मात्र छ।")
+        if not (admin_mode or finance_mode):
+            messages.error(request, "भ्रमण आदेश दर्ता गरी आदेश नं. कायम गर्ने अधिकार लेखा / आर्थिक प्रशासन शाखा (Finance) लाई मात्र छ।")
             return redirect(f'/order/{order.id}/')
         if order.status not in ['APPROVED', 'FINANCE_CLEARED']:
             messages.error(request, "कार्यालय प्रमुख / स्वीकृत गर्ने पदाधिकारीले भ्रमण आदेश स्वीकृत (Approve) गरेपछि मात्र दर्ता गरी आदेश नं. कायम गर्न मिल्छ।")
