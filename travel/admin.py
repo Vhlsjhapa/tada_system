@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from .models import Office, Employee, TravelOrder, TravelBill, TravelBillItem, TravelReport
 
 class BaseAdminMedia(admin.ModelAdmin):
@@ -29,14 +30,14 @@ class OfficeAdmin(admin.ModelAdmin):
 
     def is_default_status(self, obj):
         if obj.is_default:
-            return format_html('<span style="background:#16a34a; color:white; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:bold;">★ सक्रिय कार्यालय</span>')
-        return format_html('<span style="color:#64748b; font-size:12px;">सामान्य</span>')
+            return mark_safe('<span style="background:#16a34a; color:white; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:bold;">★ सक्रिय कार्यालय</span>')
+        return mark_safe('<span style="color:#64748b; font-size:12px;">सामान्य</span>')
     is_default_status.short_description = 'स्थिति'
 
     def quick_actions(self, obj):
         if not obj.is_default:
             return format_html('<a class="button" style="background:#0284c7; color:white; padding:3px 8px; border-radius:4px; font-size:11px; text-decoration:none;" href="/offices/set-default/{}/">सक्रिय बनाउनुहोस्</a>', obj.pk)
-        return format_html('<b style="color:#16a34a;">सक्रिय छ</b>')
+        return mark_safe('<b style="color:#16a34a;">सक्रिय छ</b>')
     quick_actions.short_description = 'कार्य'
 
 
