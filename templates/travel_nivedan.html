@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - आधिकारिक निवेदन</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm 20mm 15mm 20mm;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Kalimati', 'Noto Sans Devanagari', Arial, sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            font-size: 14.5px;
+            line-height: 1.7;
+            padding: 20px;
+        }
+        .container {
+            max-width: 21cm;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 35px 45px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+        }
+
+        /* Print Action Bar */
+        .print-btn-bar {
+            text-align: center;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+        .btn-print {
+            padding: 9px 26px;
+            font-size: 14px;
+            cursor: pointer;
+            background: #1e40af;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-family: inherit;
+            font-weight: 700;
+            transition: background 0.2s;
+        }
+        .btn-print:hover {
+            background: #1d4ed8;
+        }
+        .btn-back {
+            color: #1e40af;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Nivedan Header */
+        .nivedan-date {
+            text-align: right;
+            font-size: 14px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        .addressee-block {
+            margin-bottom: 22px;
+            line-height: 1.6;
+        }
+        .subject-block {
+            text-align: center;
+            margin: 20px 0 24px 0;
+            font-size: 16px;
+            font-weight: bold;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+        /* Letter Body */
+        .salutation {
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .letter-content {
+            text-align: justify;
+            text-justify: inter-word;
+            margin-bottom: 16px;
+            line-height: 1.8;
+            text-indent: 40px;
+        }
+        .letter-content b {
+            font-weight: 700;
+            color: #000;
+        }
+
+        /* Details / Tapasil Table */
+        .tapasil-title {
+            font-weight: bold;
+            margin: 14px 0 6px 0;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0 20px 0;
+        }
+        .details-table td {
+            border: 1px solid #94a3b8;
+            padding: 6px 10px;
+            font-size: 13.5px;
+        }
+        .details-table .lbl-col {
+            background-color: #f1f5f9;
+            font-weight: 600;
+            width: 32%;
+        }
+
+        /* Enclosure List */
+        .enclosure-list {
+            margin: 12px 0 24px 20px;
+            font-size: 13.5px;
+            line-height: 1.7;
+        }
+
+        /* Applicant Signature */
+        .applicant-block {
+            margin-top: 35px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .applicant-box {
+            width: 250px;
+            text-align: left;
+            line-height: 1.7;
+            font-size: 14px;
+        }
+
+        /* Bottom Office Notes (टिप्पणी र आदेश) */
+        .office-action-section {
+            margin-top: 40px;
+            border-top: 2px dashed #94a3b8;
+            padding-top: 20px;
+        }
+        .action-title {
+            font-size: 13px;
+            font-weight: bold;
+            text-decoration: underline;
+            margin-bottom: 15px;
+            color: #334155;
+        }
+        .signatures-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 45px;
+            font-size: 13.5px;
+        }
+        .sig-box {
+            text-align: center;
+            width: 30%;
+            line-height: 1.6;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                background: #fff;
+                font-size: 13.5px;
+            }
+            .container {
+                padding: 0;
+                margin: 0;
+                max-width: 100%;
+                box-shadow: none;
+                border-radius: 0;
+            }
+            .print-btn-bar {
+                display: none;
+            }
+            .details-table td {
+                border-color: #000;
+            }
+            .office-action-section {
+                border-top: 2px dashed #000;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="print-btn-bar">
+        <button onclick="window.print()" class="btn-print">🖨️ निवेदन प्रिन्ट गर्नुहोस् (Print Application)</button>
+        <a href="/" class="btn-back">⬅️ ड्यासबोर्डमा फर्कनुहोस्</a>
+    </div>
+
+    <div class="container">
+
+        <!-- Top Date -->
+        <div class="nivedan-date">
+            मितिः <b>{{ current_date }}</b>
+        </div>
+
+        <!-- Addressee -->
+        <div class="addressee-block">
+            श्रीमान् <b>{{ head_title }}</b> ज्यू,<br>
+            <b>{{ office_name }}</b>,<br>
+            {{ location }} ।
+        </div>
+
+        {% if nivedan_type == 'advance' %}
+        <!-- ================= ADVANCE REQUEST APPLICATION ================= -->
+        <div class="subject-block">
+            विषयः <u>भ्रमण पेस्की रकम उपलब्ध गराई पाउँ सम्बन्धमा ।</u>
+        </div>
+
+        <div class="salutation">महोदय,</div>
+
+        <div class="letter-content">
+            प्रस्तुत विषयमा यस कार्यालयको स्वीकृत राष्ट्रिय भ्रमण आदेश नं. <b>{{ order.order_number }}</b> (आदेश मिति: <b>{{ order.order_date }}</b>) बमोजिम म तपसिलको कर्मचारी तोकिएको सरकारी कामका सिलसिलामा मिति <b>{{ order.start_date }}</b> देखि <b>{{ order.end_date }}</b> सम्म <b>{{ order.destination }}</b> को भ्रमण कार्यमा खटिनुपर्ने भएको छ ।
+        </div>
+
+        <div class="letter-content">
+            उक्त भ्रमण कार्य सम्पादन गर्न सरकारी दैनिक तथा भ्रमण भत्ता नियमावली अनुसार लाग्ने आवश्यक खर्चका लागि पेस्की स्वरूप रु. <b>{{ order.advance_amount|default:"०" }}</b>/- {% if order.advance_words %}(अक्षरमा: <b>{{ order.advance_words }}</b>){% endif %} उपलब्ध गराई दिनुहुन सादर अनुरोध गर्दछु ।
+        </div>
+
+        <div class="tapasil-title">तपसिल (भ्रमण तथा कर्मचारी विवरण):</div>
+        <table class="details-table">
+            <tr>
+                <td class="lbl-col">कर्मचारीको नामथरः</td>
+                <td><b>{{ order.person }}</b></td>
+                <td class="lbl-col">कर्मचारी संकेत नं.:</td>
+                <td><b>{{ order.code_no|default:"-" }}</b></td>
+            </tr>
+            <tr>
+                <td class="lbl-col">पद / श्रेणीः</td>
+                <td><b>{{ order.designation|default:"-" }}</b></td>
+                <td class="lbl-col">स्थायी ठेगानाः</td>
+                <td>{% if order.employee %}{{ order.employee.permanent_address|default:"-" }}{% else %}-{% endif %}</td>
+            </tr>
+            <tr>
+                <td class="lbl-col">भ्रमण स्थल / गन्तव्यः</td>
+                <td><b>{{ order.destination }}</b></td>
+                <td class="lbl-col">भ्रमण अवधिः</td>
+                <td><b>{{ order.start_date }}</b> देखि <b>{{ order.end_date }}</b> सम्म</td>
+            </tr>
+            <tr>
+                <td class="lbl-col">भ्रमणको उद्देश्यः</td>
+                <td colspan="3">{{ order.purpose }}</td>
+            </tr>
+            <tr>
+                <td class="lbl-col">माग गरेको पेस्की रकमः</td>
+                <td colspan="3"><b>रु. {{ order.advance_amount|default:"०" }}</b> {% if order.advance_words %}(अक्षरमा: <b>{{ order.advance_words }}</b>){% endif %}</td>
+            </tr>
+        </table>
+
+        <!-- Applicant Block -->
+        <div class="applicant-block">
+            <div class="applicant-box">
+                दस्तखतः ..........................................<br>
+                <b>निवेदक:</b> {{ order.person }}<br>
+                <b>पद:</b> {{ order.designation }}<br>
+                <b>संकेत नं.:</b> {{ order.code_no|default:"-" }}<br>
+                <b>कार्यालय:</b> {{ office_name }}
+            </div>
+        </div>
+
+        <!-- Office Order & Approval Block -->
+        <div class="office-action-section">
+            <div class="action-title">कार्यालय प्रमुख / आर्थिक प्रशासन शाखाको प्रयोगका लागि (टिप्पणी र आदेश):</div>
+            <p style="font-size:13px; line-height: 1.6;">
+                माथि उल्लेखित विवरण बमोजिम भ्रमण कार्यका लागि माग भएको पेस्की रकम रु. <b>{{ order.advance_amount|default:"०" }}</b>/- नियमानुसार भ्रमण सम्पन्न भएको १५ दिनभित्र म.ले.प. फाराम नं. २२४ बमोजिमको बिल र प्रतिवेदन पेश गरी पेस्की फर्स्यौट गर्ने शर्तमा भुक्तानी निकासा दिन मनासिब देखि निर्णयार्थ पेश गर्दछु / गरिएको छ ।
+            </p>
+            <div class="signatures-row">
+                <div class="sig-box">
+                    ..........................................<br>
+                    <b>पेस गर्ने (लेखा शाखा)</b><br>
+                    मितिः
+                </div>
+                <div class="sig-box">
+                    ..........................................<br>
+                    <b>सिफारिस गर्ने अधिकृत</b><br>
+                    मितिः
+                </div>
+                <div class="sig-box">
+                    ..........................................<br>
+                    <b>{{ head_title }} (स्वीकृत गर्ने)</b><br>
+                    मितिः
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- ================= EXPENSE CLAIM & REPORT SUBMISSION APPLICATION ================= -->
+        <div class="subject-block">
+            विषयः <u>दैनिक तथा भ्रमण खर्चको बिल र प्रतिवेदन पेश गरी भुक्तानी पाउँ सम्बन्धमा ।</u>
+        </div>
+
+        <div class="salutation">महोदय,</div>
+
+        <div class="letter-content">
+            प्रस्तुत विषयमा यस कार्यालयको स्वीकृत राष्ट्रिय भ्रमण आदेश नं. <b>{{ bill.travel_order.order_number }}</b> (आदेश मिति: <b>{{ bill.travel_order.order_date }}</b>) अनुसार म तपसिलको कर्मचारी मिति <b>{{ bill.travel_order.start_date }}</b> देखि <b>{{ bill.travel_order.end_date }}</b> सम्म <b>{{ bill.travel_order.destination }}</b> को भ्रमण कार्य सन्तोषजनक रूपमा सम्पन्न गरी कार्यालयमा हाजिर भइसकेको व्यहोरा अनुरोध गर्दछु ।
+        </div>
+
+        <div class="letter-content">
+            उक्त भ्रमण कार्य सम्पादन गर्दा प्रचलित दैनिक तथा भ्रमण भत्ता नियमावली अनुसार भएको यातायात खर्च रु. <b>{{ bill.total_transport }}</b>, दैनिक भत्ता रु. <b>{{ bill.total_daily_allowance }}</b> तथा फुटकर खर्च रु. <b>{{ bill.total_misc }}</b> गरी कुल खर्च रु. <b>{{ bill.grand_total }}</b>/- भएकोमा पहिले लिएको पेस्की रकम रु. <b>{{ bill.advance_taken|default:"०" }}</b>/- कट्टी गरी खुद भुक्तानी पाउनुपर्ने रकम रु. <b>{{ bill.net_payable }}</b>/- {% if bill.amount_in_words %}(अक्षरमा: <b>{{ bill.amount_in_words }}</b>){% endif %} को दैनिक तथा भ्रमण खर्चको बिल (म.ले.प. फाराम नं. २२४), सक्कल टिकट/रसिदहरू तथा भ्रमण सम्पन्न प्रतिवेदन (दर्ता नं: <b>{{ bill.final_report_reg_no|default:bill.report_reg_no|default:"-" }}</b>) यसै निवेदन साथ संलग्न गरी पेश गरेको छु ।
+        </div>
+
+        <div class="letter-content">
+            तसर्थ, उक्त पेश भएका बिल, भरपाई र प्रतिवेदन नियमानुसार जाँच गरी खुद भुक्तानी पाउनुपर्ने रकम भुक्तानी निकासा दिलाई दिनुहुन सादर अनुरोध गर्दछु ।
+        </div>
+
+        <div class="tapasil-title">संलग्न कागजातहरू (Enclosures):</div>
+        <ol class="enclosure-list">
+            <li>स्वीकृत राष्ट्रिय भ्रमण आदेश (म.ले.प. फाराम नं. २२३) - १ प्रति</li>
+            <li>दैनिक तथा भ्रमण खर्चको बिल (म.ले.प. फाराम नं. २२४) - १ प्रति</li>
+            <li>भ्रमण सम्पन्न प्रतिवेदन (Travel Completion Report) - १ प्रति</li>
+            <li>सम्बन्धित यातायात टिकट, रसिद तथा बिलहरू - <b>{{ bill.receipt_count|default:"..........." }}</b> थान</li>
+        </ol>
+
+        <!-- Applicant Block -->
+        <div class="applicant-block">
+            <div class="applicant-box">
+                दस्तखतः ..........................................<br>
+                <b>निवेदक (कर्मचारी):</b> {{ bill.travel_order.person }}<br>
+                <b>पद:</b> {{ bill.travel_order.designation }}<br>
+                <b>कर्मचारी संकेत नं.:</b> {{ bill.travel_order.code_no|default:"-" }}<br>
+                <b>स्थायी ठेगाना:</b> {% if bill.address %}{{ bill.address }}{% elif bill.travel_order.employee %}{{ bill.travel_order.employee.permanent_address|default:"-" }}{% else %}-{% endif %}<br>
+                <b>कार्यालय:</b> {{ office_name }}
+            </div>
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</body>
+</html>

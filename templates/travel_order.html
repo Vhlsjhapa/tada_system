@@ -1,0 +1,327 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <title>राष्ट्रिय भ्रमण आदेश - म.ले.प. फाराम नं. २२३</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 12mm 15mm;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body { 
+            font-family: 'Kalimati', 'Noto Sans Devanagari', Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            font-size: 14px; 
+            color: #000;
+            background-color: #f1f5f9;
+        }
+        .container { 
+            max-width: 21cm; 
+            margin: auto; 
+            padding: 30px; 
+            background: #fff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Print Button */
+        .print-btn-bar {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .btn-print {
+            padding: 8px 24px;
+            font-size: 14px;
+            cursor: pointer;
+            background: #1e40af;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-family: inherit;
+            font-weight: 600;
+        }
+        .btn-print:hover {
+            background: #1d4ed8;
+        }
+        
+        /* माथिको भाग (Header) */
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            line-height: 1.45;
+        }
+        .stamp-box {
+            width: 95px;
+            height: 85px;
+            border: 1px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px;
+            background: #fff;
+        }
+        .stamp-box img {
+            max-width: 85px;
+            max-height: 78px;
+            object-fit: contain;
+            display: block;
+        }
+        .header-center {
+            text-align: center;
+            flex-grow: 1;
+            padding: 0 10px;
+        }
+        .header-right {
+            text-align: right;
+            width: 170px;
+            font-size: 13px;
+        }
+
+        /* विवरण तालिका */
+        .main-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 25px; 
+            margin-top: 15px;
+        }
+        .main-table td { 
+            border: none; 
+            padding: 5px 0; 
+            vertical-align: top; 
+            font-size: 14px;
+        }
+        .label-col { 
+            width: 38%; 
+            font-weight: 500;
+        }
+        .val-col {
+            width: 62%;
+        }
+        .checkbox-container {
+            font-size: 16px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 4px;
+        }
+
+        /* तलको हस्ताक्षर गर्ने भाग */
+        .bottom-section {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .bottom-section td {
+            border: none; 
+            padding: 5px 0; 
+            vertical-align: top; 
+            line-height: 1.7;
+            font-size: 13px;
+        }
+        .equal-line {
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            margin: 8px 0;
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+        .double-bottom-line {
+            border-bottom: 3px double #000;
+            margin-top: 5px;
+        }
+        
+        @media print {
+            body { 
+                padding: 0; 
+                background: #fff; 
+                font-size: 13px; 
+            }
+            .container { 
+                padding: 0; 
+                margin: 0; 
+                max-width: 100%; 
+                box-shadow: none; 
+            }
+            .print-btn-bar { 
+                display: none !important; 
+            }
+            .stamp-box {
+                border: 1px solid #000 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background: #fff !important;
+            }
+            .stamp-box img {
+                display: block !important;
+                visibility: visible !important;
+                max-width: 85px !important;
+                max-height: 80px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="print-btn-bar">
+        <button onclick="window.print()" class="btn-print">🖨️ राष्ट्रिय भ्रमण आदेश प्रिन्ट गर्नुहोस्</button>
+
+        {% if record.status == 'PENDING' %}
+            {% if is_admin or request.user.is_staff %}
+                <a href="/order/{{ record.id }}/action/approve/" style="margin-left: 10px; background:#dcfce7; color:#15803d; padding: 7px 16px; border:1px solid #86efac; border-radius:6px; text-decoration:none; font-weight:700; font-size:13.5px; display:inline-flex; align-items:center; gap:5px;">
+                    ✅ भ्रमण स्वीकृत गर्नुहोस् (Approve Order)
+                </a>
+            {% else %}
+                <span style="margin-left: 10px; background:#fef3c7; color:#92400e; padding: 7px 14px; border:1px solid #fde68a; border-radius:6px; font-weight:600; font-size:13px;">
+                    ⏳ कार्यालय प्रमुख स्वीकृतिको प्रतीक्षामा
+                </span>
+            {% endif %}
+        {% elif record.status == 'APPROVED' %}
+            {% if is_admin or is_finance or request.user.is_staff %}
+                <a href="/order/{{ record.id }}/action/register/" style="margin-left: 10px; background:#2563eb; color:white; padding: 7px 16px; border-radius:6px; text-decoration:none; font-weight:700; font-size:13.5px; display:inline-flex; align-items:center; gap:5px;">
+                    🔢 दर्ता गरी आदेश नं. कायम गर्नुहोस्
+                </a>
+            {% else %}
+                <span style="margin-left: 10px; background:#dbeafe; color:#1e40af; padding: 7px 14px; border:1px solid #bfdbfe; border-radius:6px; font-weight:600; font-size:13px;">
+                    ✅ कार्यालय प्रमुखद्वारा स्वीकृत (दर्ता बाँकी)
+                </span>
+            {% endif %}
+        {% endif %}
+
+        <a href="/order/{{ record.id }}/edit/" style="margin-left: 10px; background:#f1f5f9; color:#1e293b; padding: 7px 14px; border:1px solid #cbd5e1; border-radius:6px; text-decoration:none; font-weight:600; font-size:13.5px; display:inline-flex; align-items:center; gap:5px;">✏️ आदेश सच्याउनुहोस् (Edit)</a>
+        <a href="/order/{{ record.id }}/nivedan/" style="margin-left: 10px; background:#fef3c7; color:#92400e; padding: 7px 14px; border:1px solid #fde68a; border-radius:6px; text-decoration:none; font-weight:600; font-size:13.5px; display:inline-flex; align-items:center; gap:5px;">📝 पेस्की निवेदन</a>
+        <a href="/" style="margin-left: 15px; color:#1e40af; text-decoration:none; font-weight:600;">⬅️ ड्यासबोर्डमा फर्कनुहोस्</a>
+    </div>
+
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header-flex">
+            <!-- देब्रे कुनाको नेपाल सरकारको आधिकारिक निशान छाप बक्स -->
+            <div class="stamp-box">
+                <img src="{% static 'images/nepal_logo.svg' %}" alt="नेपाल सरकार निशान छाप" style="max-width:85px; max-height:80px; object-fit:contain; display:block;">
+            </div>
+            
+            <!-- बीचको टेक्स्ट -->
+            <div class="header-center">
+                <b>{{ record.parent_body_1 }}</b><br>
+                {% if record.parent_body_2 %}<b>{{ record.parent_body_2 }}</b><br>{% endif %}
+                {% if record.parent_body_3 %}<b>{{ record.parent_body_3 }}</b><br>{% endif %}
+                <b>{{ record.office_name }}</b><br>
+                कार्यालय कोड नं.: {{ record.office_code }}<br><br>
+                <b style="font-size: 17px; text-decoration: underline; text-underline-offset: 3px;">राष्ट्रिय भ्रमण आदेश</b>
+            </div>
+            
+            <!-- दायाँ कुनाको टेक्स्ट -->
+            <div class="header-right">
+                म.ले.प.फाराम नं: २२३<br><br>
+                आदेश नं: <b>{{ record.order_number }}</b><br>
+                मिति: <b>{{ record.order_date|default:"........................" }}</b>
+            </div>
+        </div>
+
+        <!-- Main Details Table -->
+        <table class="main-table">
+            <tr>
+                <td class="label-col">कर्मचारी संकेत नं:</td>
+                <td class="val-col"><b>{{ record.code_no|default:".............................." }}</b></td>
+            </tr>
+            <tr>
+                <td class="label-col">भ्रमण गर्ने पदाधिकारी वा कर्मचारीको नाम:</td>
+                <td class="val-col"><b>{{ record.person|default:".............................." }}</b></td>
+            </tr>
+            <tr>
+                <td class="label-col">पद:</td>
+                <td class="val-col"><b>{{ record.designation|default:".............................." }}</b></td>
+            </tr>
+            <tr>
+                <td class="label-col">कार्यालय:</td>
+                <td class="val-col">{{ record.office|default:"भेटेरिनरी अस्पताल तथा पशु सेवा विज्ञ केन्द्र, झापा" }}</td>
+            </tr>
+            <tr>
+                <td class="label-col">भ्रमण गर्ने स्थान:</td>
+                <td class="val-col"><b>{{ record.destination|default:".............................." }}</b></td>
+            </tr>
+            <tr>
+                <td class="label-col">भ्रमणको उद्देश्य:</td>
+                <td class="val-col">{{ record.purpose|default:"तोकिएको सरकारी कामकाज" }}</td>
+            </tr>
+            <tr>
+                <td class="label-col">भ्रमण गर्ने अवधि:</td>
+                <td class="val-col">
+                    मिति <b>{{ record.start_date|default:"............" }}</b> देखि 
+                    <b>{{ record.end_date|default:"............" }}</b> सम्म
+                </td>
+            </tr>
+            <tr>
+                <td class="label-col"><br>भ्रमण गर्ने साधन:</td>
+                <td class="val-col"><br>
+                    <span class="checkbox-container">{% if record.vehicle_office %}☑{% else %}☐{% endif %}</span> कार्यालयको &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <span class="checkbox-container">{% if record.vehicle_public %}☑{% else %}☐{% endif %}</span> सार्वजनिक &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <span class="checkbox-container">{% if record.vehicle_rent %}☑{% else %}☐{% endif %}</span> भाडाको
+                </td>
+            </tr>
+            <tr>
+                <td class="label-col">भ्रमण निमित्त माग गरेको पेस्की रकम:</td>
+                <td class="val-col">
+                    रु. <b>{{ record.advance_amount|default:"............" }}</b> 
+                    {% if record.advance_words %}(अक्षरमा: {{ record.advance_words }}){% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td class="label-col"><u style="text-decoration: underline; text-underline-offset: 4px;">भ्रमण सम्बन्धी अन्य आवश्यक विवरण</u></td>
+                <td class="val-col">{{ record.other_details|default:"" }}</td>
+            </tr>
+        </table>
+
+        <!-- Signatures Section -->
+        <table class="bottom-section">
+            <tr>
+                <td style="width: 33%;">
+                    ...................................<br>
+                    <b>भ्रमण गर्ने पदाधिकारी</b><br>
+                    मिति: <b>{{ record.traveller_date|default:"" }}</b>
+                </td>
+                <td style="width: 33%; text-align: center;">
+                    ...................................<br>
+                    <b>सिफारिस गर्ने पदाधिकारी</b><br>
+                    मिति: <b>{{ record.recommender_date|default:"" }}</b>
+                </td>
+                <td style="width: 34%; text-align: right;">
+                    ...................................<br>
+                    <b>भ्रमण स्वीकृत गर्ने पदाधिकारी</b><br>
+                    मिति: <b>{{ record.approver_date|default:"" }}</b>
+                </td>
+            </tr>
+        </table>
+
+        <div class="equal-line">
+            =============================================================================================================
+        </div>
+
+        <table class="bottom-section" style="margin-top: 5px;">
+            <tr>
+                <td style="width: 50%;">
+                    <u><b>आर्थिक प्रशासन शाखाले भर्ने:</b></u><br>
+                    खर्च जनाउने कार्यक्रमको/आयोजनाको नाम: <b>{{ record.program_name|default:"........................" }}</b><br>
+                    जनाउने कर्मचारीको दस्तखतः ..........................
+                </td>
+                <td style="width: 50%; padding-left: 20px;">
+                    <u><b>प्रशासन शाखाले भर्ने:</b></u><br>
+                    हाजिरी खातामा जनाएको मिति: <b>{{ record.admin_date|default:"........................" }}</b><br>
+                    जनाउने कर्मचारीको दस्तखतः ..........................
+                </td>
+            </tr>
+        </table>
+        
+        <div class="double-bottom-line"></div>
+
+    </div>
+
+</body>
+</html>

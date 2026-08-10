@@ -1,0 +1,232 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <title>भ्रमण सम्पन्न प्रतिवेदन</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm 20mm;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body { 
+            font-family: 'Kalimati', 'Noto Sans Devanagari', Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            font-size: 14px; 
+            color: #000;
+            background-color: #f1f5f9;
+            line-height: 1.6;
+        }
+        .container { 
+            max-width: 21cm; 
+            margin: auto; 
+            padding: 30px 40px; 
+            background: #fff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Print Button */
+        .print-btn-bar {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .btn-print {
+            padding: 8px 24px;
+            font-size: 14px;
+            cursor: pointer;
+            background: #7c3aed;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-family: inherit;
+            font-weight: 600;
+        }
+        .btn-print:hover {
+            background: #6d28d9;
+        }
+        
+        /* Header */
+        .header-center {
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.45;
+        }
+        .form-title {
+            font-size: 18px;
+            font-weight: bold;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            margin-top: 10px;
+        }
+
+        /* Meta Table */
+        .meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border: 1px solid #000;
+        }
+        .meta-table td {
+            border: 1px solid #000;
+            padding: 6px 10px;
+            font-size: 13px;
+        }
+        .meta-table .label-td {
+            width: 22%;
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+
+        /* Content Sections */
+        .report-section {
+            margin-bottom: 18px;
+        }
+        .section-title {
+            font-weight: bold;
+            font-size: 14.5px;
+            margin-bottom: 6px;
+            color: #1e293b;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 2px;
+        }
+        .section-body {
+            font-size: 13.5px;
+            white-space: pre-wrap;
+            line-height: 1.7;
+            padding-left: 8px;
+            color: #0f172a;
+            min-height: 40px;
+        }
+
+        /* Signatures */
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 40px;
+        }
+        .signature-table td {
+            border: none;
+            vertical-align: top;
+            line-height: 1.8;
+            font-size: 13px;
+        }
+
+        @media print {
+            body { 
+                padding: 0; 
+                background: #fff; 
+                font-size: 13px;
+            }
+            .container { 
+                padding: 0; 
+                margin: 0; 
+                max-width: 100%; 
+                box-shadow: none;
+            }
+            .print-btn-bar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="print-btn-bar">
+        <button onclick="window.print()" class="btn-print">🖨️ भ्रमण प्रतिवेदन प्रिन्ट गर्नुहोस्</button>
+        <a href="/" style="margin-left: 15px; color:#1e40af; text-decoration:none; font-weight:600;">⬅️ ड्यासबोर्डमा फर्कनुहोस्</a>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+            <div style="width:90px; text-align:left;">
+                <img src="{% static 'images/nepal_logo.svg' %}" alt="नेपाल सरकार निशान छाप" style="width:68px; height:auto; object-fit:contain;">
+            </div>
+            <div class="header-center" style="flex-grow:1; margin-bottom:0;">
+                <b>{{ report.travel_order.parent_body_1|default:"नेपाल सरकार" }}</b><br>
+                {% if report.travel_order.parent_body_2 %}<b>{{ report.travel_order.parent_body_2 }}</b><br>{% endif %}
+                {% if report.travel_order.parent_body_3 %}<b>{{ report.travel_order.parent_body_3 }}</b><br>{% endif %}
+                <b>{{ report.travel_order.office_name }}</b><br>
+                कार्यालय कोड नं.: {{ report.travel_order.office_code }}<br>
+                <div class="form-title">भ्रमण सम्पन्न प्रतिवेदन</div>
+            </div>
+            <div style="width:90px;"></div>
+        </div>
+
+        <!-- Meta Table -->
+        <table class="meta-table">
+            <tr>
+                <td class="label-td">भ्रमण आदेश नं.:</td>
+                <td><b>{{ report.travel_order.order_number }}</b> (आदेश मिति: {{ report.travel_order.order_date }})</td>
+                <td class="label-td">प्रतिवेदन दर्ता नं.:</td>
+                <td><b>{{ report.report_reg_no|default:"................" }}</b></td>
+            </tr>
+            <tr>
+                <td class="label-td">कर्मचारीको नामथर:</td>
+                <td><b>{{ report.travel_order.person }}</b></td>
+                <td class="label-td">कर्मचारी संकेत नं.:</td>
+                <td><b>{{ report.travel_order.code_no|default:"-" }}</b></td>
+            </tr>
+            <tr>
+                <td class="label-td">पद र तह:</td>
+                <td><b>{{ report.travel_order.designation }}</b></td>
+                <td class="label-td">प्रतिवेदन पेश मिति:</td>
+                <td><b>{{ report.report_date }}</b></td>
+            </tr>
+            <tr>
+                <td class="label-td">भ्रमण गरेको स्थान:</td>
+                <td><b>{{ report.travel_order.destination }}</b></td>
+                <td class="label-td">भ्रमण अवधि:</td>
+                <td>मिति <b>{{ report.travel_order.start_date }}</b> देखि <b>{{ report.travel_order.end_date }}</b> सम्म</td>
+            </tr>
+            <tr>
+                <td class="label-td">भ्रमणको मुख्य उद्देश्य:</td>
+                <td colspan="3">{{ report.travel_order.purpose }}</td>
+            </tr>
+        </table>
+
+        <!-- 1. Key Activities -->
+        <div class="report-section">
+            <div class="section-title">१. सम्पादित मुख्य कार्यहरूको संक्षिप्त विवरण (Key Activities):</div>
+            <div class="section-body">{{ report.key_activities }}</div>
+        </div>
+
+        <!-- 2. Achievements -->
+        <div class="report-section">
+            <div class="section-title">२. भ्रमणबाट हासिल भएका मुख्य उपलब्धिहरू (Key Achievements):</div>
+            <div class="section-body">{{ report.achievements }}</div>
+        </div>
+
+        <!-- 3. Challenges -->
+        {% if report.challenges %}
+        <div class="report-section">
+            <div class="section-title">३. स्थलगत देखिएका समस्या तथा चुनौतीहरू (Challenges):</div>
+            <div class="section-body">{{ report.challenges }}</div>
+        </div>
+        {% endif %}
+
+        <!-- 4. Recommendations -->
+        <div class="report-section">
+            <div class="section-title">४. निष्कर्ष तथा आगामी कार्यका लागि सुझावहरू (Recommendations):</div>
+            <div class="section-body">{{ report.recommendations }}</div>
+        </div>
+
+        <!-- Signatures (Only प्रतिवेदन पेश गर्ने) -->
+        <div style="margin-top: 40px; display: flex; justify-content: flex-end;">
+            <div style="min-width: 280px; text-align: left; font-size: 13.5px; line-height: 1.8;">
+                <u><b>प्रतिवेदन पेश गर्नेः</b></u><br><br>
+                दस्तखतः ....................................................<br>
+                नामथरः <b>{{ report.submitted_by|default:report.travel_order.person }}</b><br>
+                पदः <b>{{ report.submitted_designation|default:report.travel_order.designation }}</b><br>
+                मितिः <b>{{ report.report_date }}</b>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

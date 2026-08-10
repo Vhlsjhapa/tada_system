@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>नयाँ राष्ट्रिय भ्रमण आदेश - म.ले.प. फाराम नं. २२३</title>
+    <link rel="stylesheet" href="/static/css/nepali_calendar.css">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --border: #cbd5e1;
+            --bg: #f8fafc;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Kalimati', 'Noto Sans Devanagari', Arial, sans-serif;
+            background-color: var(--bg);
+            color: #0f172a;
+            padding: 24px;
+        }
+        .form-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 30px 36px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+        }
+        .form-header {
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .form-header h2 {
+            font-size: 20px;
+            color: var(--primary);
+        }
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin: 20px 0 12px 0;
+            color: #1e40af;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 4px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+        }
+        input, select, textarea {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.15);
+        }
+        .checkbox-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            padding: 10px 0;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .btn-submit {
+            background: #1e40af;
+            color: white;
+            padding: 10px 28px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+        .btn-submit:hover {
+            background: #1d4ed8;
+        }
+        .btn-back {
+            color: #64748b;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .alert-error {
+            background-color: #fef2f2;
+            border: 1px solid #f87171;
+            border-left: 5px solid #dc2626;
+            color: #991b1b;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .duration-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: #e0f2fe;
+            color: #0369a1;
+            margin-top: 4px;
+        }
+        .duration-badge.invalid {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <div class="form-header">
+        <div>
+            <h2>{% if order %}✏️ राष्ट्रिय भ्रमण आदेश सच्याउनुहोस् (म.ले.प. फाराम नं. २२३){% else %}📄 नयाँ राष्ट्रिय भ्रमण आदेश (म.ले.प. फाराम नं. २२३){% endif %}</h2>
+            <p style="font-size:12px; color:#64748b; margin-top:2px;">{% if order %}आदेश नं: <b>{{ order.order_number }}</b> ({{ order.person }}) को विवरण सच्याउनुहोस्{% else %}कर्मचारीको विवरण छान्नुहोस् र मिति क्यालेन्डरबाट चयन गर्नुहोस्{% endif %}</p>
+        </div>
+        <a href="{% if order %}/order/{{ order.id }}/{% else %}/{% endif %}" class="btn-back">⬅️ फर्कनुहोस्</a>
+    </div>
+
+    {% if error_message %}
+    <div class="alert-error">
+        <b>⚠️ मिति तथा नियम त्रुटि:</b> {{ error_message }}
+    </div>
+    {% endif %}
+
+    <div id="js_date_error" class="alert-error" style="display: none;"></div>
+
+    <form id="orderForm" method="POST" action="{% if order %}/order/{{ order.id }}/edit/{% else %}/order/new/{% endif %}">
+        {% csrf_token %}
+
+        <!-- १. आदेश तथा कर्मचारी छनोट -->
+        <div class="section-title">
+            <span>१. आदेश तथा कर्मचारीको विवरण</span>
+            {% if order and order.order_number %}
+                <span style="font-size:12px; font-weight:normal; background:#dcfce7; color:#15803d; padding:3px 8px; border-radius:4px; border:1px solid #bbf7d0;">
+                    📋 दर्ता आदेश नं.: <b>{{ order.order_number }}</b>
+                </span>
+            {% else %}
+                <span style="font-size:11.5px; font-weight:normal; background:#eff6ff; color:#1e40af; padding:3px 8px; border-radius:4px; border:1px solid #bfdbfe;">
+                    ✨ दर्ता पश्चात् अटोमेटिक क्रमिक आदेश नं. कायम हुनेछ
+                </span>
+            {% endif %}
+        </div>
+        
+        <input type="hidden" id="id_order_number" name="order_number" value="{% if form_data %}{{ form_data.order_number }}{% elif order %}{{ order.order_number }}{% else %}{% endif %}">
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label>आदेश मिति (नेपाली पात्रो) *</label>
+                <input type="text" id="id_order_date" name="order_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.order_date }}{% elif order %}{{ order.order_date }}{% else %}२०८२/०४/२०{% endif %}" required>
+            </div>
+            <div class="form-group">
+                <label>आर्थिक वर्ष (Fiscal Year) *</label>
+                <select id="id_fiscal_year" name="fiscal_year" required style="font-weight: 600; background-color: #f8fafc;">
+                    {% for fy in fiscal_years %}
+                    <option value="{{ fy }}" {% if form_data and form_data.fiscal_year == fy %}selected{% elif order and order.fiscal_year == fy %}selected{% elif not order and not form_data and fy == default_fy %}selected{% endif %}>{{ fy }}</option>
+                    {% endfor %}
+                </select>
+                <small style="font-size:11px; color:#64748b;">(मिति अनुसार स्वतः आर्थिक वर्ष परिवर्तन हुन्छ वा ड्रपडाउनबाट छनोट गर्न सक्नुहुन्छ)</small>
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group" style="grid-column: span 2;">
+                <label>कार्यालय छान्नुहोस् (Office):</label>
+                <select name="office_ref" id="id_office_ref">
+                    {% for off in offices %}
+                    <option value="{{ off.id }}" {% if form_data and form_data.office_ref == off.id|stringformat:"s" %}selected{% elif order and order.office_ref_id == off.id %}selected{% elif not order and not form_data and off.is_default %}selected{% endif %}>{{ off.name }} ({{ off.location|default:"" }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+                <label>कर्मचारी छान्नुहोस् (Employee Auto-Fill):</label>
+                <select name="employee" id="id_employee">
+                    <option value="">-- दर्ता भएको कर्मचारी छान्नुहोस् --</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp.id }}" {% if form_data and form_data.employee == emp.id|stringformat:"s" %}selected{% elif order and order.employee_id == emp.id %}selected{% endif %}>{{ emp.name }} (संकेत नं: {{ emp.code_no }}) - {{ emp.designation }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label>कर्मचारीको नामथर *</label>
+                <input type="text" name="person" id="id_person" value="{% if form_data %}{{ form_data.person }}{% elif order %}{{ order.person }}{% else %}{% endif %}" required placeholder="कर्मचारीको नामथर">
+            </div>
+            <div class="form-group">
+                <label>कर्मचारी संकेत नं.</label>
+                <input type="text" name="code_no" id="id_code_no" value="{% if form_data %}{{ form_data.code_no }}{% elif order %}{{ order.code_no }}{% else %}{% endif %}" placeholder="संकेत नं.">
+            </div>
+            <div class="form-group">
+                <label>पद</label>
+                <input type="text" name="designation" id="id_designation" value="{% if form_data %}{{ form_data.designation }}{% elif order %}{{ order.designation }}{% else %}{% endif %}" placeholder="पद">
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:16px;">
+            <label>कार्यालय (Office Name Text)</label>
+            <input type="text" name="office" id="id_office" value="{% if form_data %}{{ form_data.office }}{% elif order %}{{ order.office_name }}{% else %}{{ default_office.name }}{% endif %}">
+        </div>
+
+        <!-- २. भ्रमण विवरण -->
+        <div class="section-title">२. भ्रमण स्थल, उद्देश्य र साधन</div>
+
+        <div class="form-grid">
+            <div class="form-group" style="grid-column: span 2;">
+                <label>भ्रमण गर्ने स्थान *</label>
+                <input type="text" name="destination" value="{% if form_data %}{{ form_data.destination }}{% elif order %}{{ order.destination }}{% else %}{% endif %}" required placeholder="जस्तै: विर्तामोड, झापा / काठमाडौं">
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+                <label>भ्रमणको उद्देश्य *</label>
+                <input type="text" name="purpose" value="{% if form_data %}{{ form_data.purpose }}{% elif order %}{{ order.purpose }}{% else %}तोकिएको सरकारी कामकाज / अनुगमन निरीक्षण{% endif %}" required>
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label>भ्रमण शुरु मिति (नेपाली पात्रो) *</label>
+                <input type="text" id="id_start_date" name="start_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.start_date }}{% elif order %}{{ order.start_date }}{% else %}२०८२/०४/२१{% endif %}" required placeholder="२०८२/०४/२१">
+            </div>
+            <div class="form-group">
+                <label>भ्रमण अन्त्य मिति (नेपाली पात्रो) *</label>
+                <input type="text" id="id_end_date" name="end_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.end_date }}{% elif order %}{{ order.end_date }}{% else %}२०८२/०४/२३{% endif %}" required placeholder="२०८२/०४/२३">
+            </div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+            <div id="duration_indicator" class="duration-badge">⏱️ भ्रमण अवधि: गणना हुँदैछ...</div>
+            <p style="font-size: 11.5px; color: #64748b; margin-top: 4px;">
+                💡 <b>नियम:</b> भ्रमण शुरु मिति, सिफारिस गर्ने र स्वीकृत गर्ने पदाधिकारीको मिति आदेश मिति भन्दा अगाडिको हुन सक्दैन (कि त आदेश मितिकै दिन वा सो भन्दा पछि हुनुपर्दछ) र भ्रमण अवधि बढीमा ७ दिन सम्म मात्र हुन्छ।
+            </p>
+        </div>
+
+        <div class="form-group">
+            <label>भ्रमण गर्ने साधन:</label>
+            <div class="checkbox-row">
+                <label class="checkbox-item">
+                    <input type="checkbox" name="vehicle_public" {% if form_data %}{% if form_data.vehicle_public %}checked{% endif %}{% elif order %}{% if order.vehicle_public %}checked{% endif %}{% else %}checked{% endif %}> सार्वजनिक सवारी
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" name="vehicle_office" {% if form_data %}{% if form_data.vehicle_office %}checked{% endif %}{% elif order and order.vehicle_office %}checked{% endif %}> कार्यालयको सवारी
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" name="vehicle_rent" {% if form_data %}{% if form_data.vehicle_rent %}checked{% endif %}{% elif order and order.vehicle_rent %}checked{% endif %}> भाडाको सवारी
+                </label>
+            </div>
+        </div>
+
+        <!-- ३. पेस्की तथा अन्य विवरण -->
+        <div class="section-title">३. पेस्की रकम र अन्य विवरण</div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label>माग गरेको पेस्की रकम (रु.)</label>
+                <input type="number" name="advance_amount" id="advance_input" value="{% if form_data %}{{ form_data.advance_amount }}{% elif order %}{{ order.advance_amount }}{% else %}{% endif %}" placeholder="रु. ०">
+            </div>
+            <div class="form-group">
+                <label>पेस्की रकम अक्षरमा</label>
+                <input type="text" name="advance_words" id="advance_words" value="{% if form_data %}{{ form_data.advance_words }}{% elif order %}{{ order.advance_words }}{% else %}{% endif %}" placeholder="जस्तै: पाँच हजार रूपैयाँ मात्र">
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label>भ्रमण सम्बन्धी अन्य आवश्यक विवरण</label>
+            <textarea name="other_details" rows="2" placeholder="अन्य कुनै कैफियत वा विवरण">{% if form_data %}{{ form_data.other_details }}{% elif order %}{{ order.other_details }}{% else %}{% endif %}</textarea>
+        </div>
+
+        <!-- ४. दस्तखत मितिहरू र शाखा प्रमाणीकरण -->
+        <div class="section-title">४. दस्तखत मितिहरू तथा शाखा प्रमाणीकरण</div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label>भ्रमण गर्ने पदाधिकारीको मिति</label>
+                <input type="text" id="id_traveller_date" name="traveller_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.traveller_date }}{% elif order %}{{ order.traveller_date|default:'' }}{% else %}{% endif %}" placeholder="२०८२/०४/२०">
+            </div>
+            <div class="form-group">
+                <label>सिफारिस गर्ने पदाधिकारीको मिति</label>
+                <input type="text" id="id_recommender_date" name="recommender_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.recommender_date }}{% elif order %}{{ order.recommender_date|default:'' }}{% else %}{% endif %}" placeholder="२०८२/०४/२०">
+            </div>
+            <div class="form-group">
+                <label>भ्रमण स्वीकृत गर्ने पदाधिकारीको मिति</label>
+                <input type="text" id="id_approver_date" name="approver_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.approver_date }}{% elif order %}{{ order.approver_date|default:'' }}{% else %}{% endif %}" placeholder="२०८२/०४/२०">
+            </div>
+        </div>
+
+        <div class="form-grid" style="margin-bottom: 24px;">
+            <div class="form-group">
+                <label>खर्च जनाउने कार्यक्रम/आयोजनाको नाम (आर्थिक प्रशासन)</label>
+                <input type="text" name="program_name" value="{% if form_data %}{{ form_data.program_name }}{% elif order %}{{ order.program_name }}{% else %}{% endif %}" placeholder="कार्यक्रम/आयोजनाको नाम">
+            </div>
+            <div class="form-group">
+                <label>हाजिरी खातामा जनाएको मिति (प्रशासन शाखा)</label>
+                <input type="text" id="id_admin_date" name="admin_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.admin_date }}{% elif order %}{{ order.admin_date|default:'' }}{% else %}{% endif %}" placeholder="२०८२/०४/२१">
+            </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:12px; align-items:center;">
+            <a href="{% if order %}/order/{{ order.id }}/{% else %}/{% endif %}" class="btn-back">रद्द गर्नुहोस्</a>
+            <button type="submit" class="btn-submit">{% if order %}💾 सच्याइएको विवरण सुरक्षित गर्नुहोस्{% else %}💾 सुरक्षित गरी स्वीकृतिको लागि पेश गर्नुहोस् (Save & Submit for Approval){% endif %}</button>
+        </div>
+
+    </form>
+</div>
+
+<script src="/static/js/nepali_calendar.js"></script>
+<script>
+    // Live Advance Words conversion
+    document.getElementById('advance_input')?.addEventListener('input', function(e) {
+        const val = parseInt(e.target.value, 10);
+        if (val) {
+            document.getElementById('advance_words').value = NepaliCalendar.nepaliNumberToWords(val);
+        } else {
+            document.getElementById('advance_words').value = '';
+        }
+    });
+
+    // Employee selection auto-fill
+    document.getElementById('id_employee')?.addEventListener('change', function(e) {
+        const empId = e.target.value;
+        if (!empId) return;
+        fetch(`/api/employee/${empId}/`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('id_person').value = data.name || '';
+                    document.getElementById('id_code_no').value = data.code_no || '';
+                    document.getElementById('id_designation').value = data.designation || '';
+                    if (data.office) {
+                        document.getElementById('id_office').value = data.office;
+                    }
+                    if (data.office_id) {
+                        document.getElementById('id_office_ref').value = data.office_id;
+                    }
+                }
+            })
+            .catch(err => console.error('Error fetching employee:', err));
+    });
+
+    // Office change auto-updates office name field
+    document.getElementById('id_office_ref')?.addEventListener('change', function(e) {
+        const selectedText = e.target.options[e.target.selectedIndex].text;
+        document.getElementById('id_office').value = selectedText.split(' (')[0];
+    });
+
+    // Nepali Date Validation and Duration Calculation
+    function updateDateValidationUI() {
+        const orderDate = document.getElementById('id_order_date')?.value;
+        const startDate = document.getElementById('id_start_date')?.value;
+        const endDate = document.getElementById('id_end_date')?.value;
+        const recommenderDate = document.getElementById('id_recommender_date')?.value;
+        const approverDate = document.getElementById('id_approver_date')?.value;
+        const indicator = document.getElementById('duration_indicator');
+        const errorBox = document.getElementById('js_date_error');
+
+        if (!orderDate || !startDate || !endDate) return;
+
+        const valRes = NepaliCalendar.validateOrderDates(orderDate, startDate, endDate, recommenderDate, approverDate);
+        if (!valRes.valid) {
+            const msg = valRes.message || valRes.error;
+            indicator.className = 'duration-badge invalid';
+            indicator.innerHTML = '❌ ' + msg;
+            errorBox.style.display = 'block';
+            errorBox.innerHTML = '<b>⚠️ अमान्य मिति:</b> ' + msg;
+        } else {
+            indicator.className = 'duration-badge';
+            const nepDays = NepaliCalendar.toNepaliDigits(valRes.duration || valRes.durationDays);
+            indicator.innerHTML = `⏱️ भ्रमण अवधि: <b>${nepDays} दिन</b> (${startDate} देखि ${endDate})`;
+            errorBox.style.display = 'none';
+        }
+    }
+
+    ['id_order_date', 'id_start_date', 'id_end_date', 'id_recommender_date', 'id_approver_date', 'id_traveller_date', 'id_admin_date'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('change', updateDateValidationUI);
+            el.addEventListener('input', updateDateValidationUI);
+        }
+    });
+
+    // Form submit validation
+    document.getElementById('orderForm')?.addEventListener('submit', function(e) {
+        const orderDate = document.getElementById('id_order_date')?.value;
+        const startDate = document.getElementById('id_start_date')?.value;
+        const endDate = document.getElementById('id_end_date')?.value;
+        const recommenderDate = document.getElementById('id_recommender_date')?.value;
+        const approverDate = document.getElementById('id_approver_date')?.value;
+
+        const valRes = NepaliCalendar.validateOrderDates(orderDate, startDate, endDate, recommenderDate, approverDate);
+        if (!valRes.valid) {
+            e.preventDefault();
+            const msg = valRes.message || valRes.error;
+            const errorBox = document.getElementById('js_date_error');
+            errorBox.style.display = 'block';
+            errorBox.innerHTML = '<b>⚠️ फाराम पेश गर्न सकिँदैन:</b> ' + msg;
+            errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            alert(msg);
+        }
+    });
+
+    // Auto-calculate Fiscal Year from Order Date (Shrawan 1 to Ashadh end)
+    function autoCalculateFiscalYear() {
+        const orderDateInput = document.getElementById('id_order_date');
+        const fySelect = document.getElementById('id_fiscal_year');
+        if (!orderDateInput || !fySelect) return;
+        const dateStr = orderDateInput.value.trim();
+        if (!dateStr) return;
+
+        const nepToEng = {'०':'0','१':'1','२':'2','३':'3','४':'4','५':'5','६':'6','७':'7','८':'8','९':'9'};
+        let normalized = dateStr.split('').map(c => nepToEng[c] || c).join('');
+        let parts = normalized.split(/[\/\-]/);
+        if (parts.length >= 2) {
+            let y = parseInt(parts[0], 10);
+            let m = parseInt(parts[1], 10);
+            if (!isNaN(y) && !isNaN(m) && y >= 2000 && y <= 2100) {
+                let startY, endY;
+                if (m >= 4) {
+                    startY = y;
+                    endY = (y + 1) % 100;
+                } else {
+                    startY = y - 1;
+                    endY = y % 100;
+                }
+                const engToNep = {'0':'०','1':'१','2':'२','3':'३','4':'४','5':'५','6':'६','7':'७','8':'८','9':'९'};
+                const toNep = (n) => String(n).split('').map(c => engToNep[c] || c).join('');
+                const endYFormatted = String(endY).padStart(2, '0');
+                const computedFY = `${toNep(startY)}/${toNep(endYFormatted)}`;
+                
+                let found = false;
+                for (let i = 0; i < fySelect.options.length; i++) {
+                    if (fySelect.options[i].value === computedFY) {
+                        fySelect.selectedIndex = i;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    const opt = document.createElement('option');
+                    opt.value = computedFY;
+                    opt.textContent = computedFY;
+                    opt.selected = true;
+                    fySelect.insertBefore(opt, fySelect.firstChild);
+                }
+                fetchNextOrderNumberPreview();
+            }
+        }
+    }
+
+    // Auto-fetch Next Order Number Preview
+    function fetchNextOrderNumberPreview() {
+        const orderNumInput = document.getElementById('id_order_number');
+        const badge = document.getElementById('auto_order_badge');
+        const fySelect = document.getElementById('id_fiscal_year');
+        const officeSelect = document.getElementById('id_office_ref');
+        const orderDateInput = document.getElementById('id_order_date');
+
+        const fy = fySelect ? fySelect.value.trim() : '';
+        const officeId = officeSelect ? officeSelect.value : '';
+        const orderDate = orderDateInput ? orderDateInput.value.trim() : '';
+
+        const url = `/api/next-order-number/?fiscal_year=${encodeURIComponent(fy)}&office_id=${encodeURIComponent(officeId)}&order_date=${encodeURIComponent(orderDate)}`;
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.next_order_number) {
+                    if (badge) {
+                        badge.innerHTML = `✨ अर्को नयाँ नम्बर: <b>${data.next_order_number}</b> (स्वतः जारी हुने)`;
+                    }
+                    if (orderNumInput && (!orderNumInput.value || orderNumInput.dataset.autoFilled === 'true')) {
+                        orderNumInput.placeholder = `स्वतः जारी हुने: ${data.next_order_number}`;
+                    }
+                }
+            })
+            .catch(err => console.log('Next order number fetch error:', err));
+    }
+
+    const orderDateEl = document.getElementById('id_order_date');
+    if (orderDateEl) {
+        orderDateEl.addEventListener('change', function() {
+            autoCalculateFiscalYear();
+            fetchNextOrderNumberPreview();
+            updateDateValidationUI();
+        });
+        orderDateEl.addEventListener('input', function() {
+            autoCalculateFiscalYear();
+            fetchNextOrderNumberPreview();
+            updateDateValidationUI();
+        });
+    }
+
+    const fySelectEl = document.getElementById('id_fiscal_year');
+    if (fySelectEl) {
+        fySelectEl.addEventListener('change', fetchNextOrderNumberPreview);
+    }
+    const officeRefEl = document.getElementById('id_office_ref');
+    if (officeRefEl) {
+        officeRefEl.addEventListener('change', fetchNextOrderNumberPreview);
+    }
+
+    // Initialize on load
+    setTimeout(function() {
+        updateDateValidationUI();
+        {% if not order %}
+        autoCalculateFiscalYear();
+        {% endif %}
+        fetchNextOrderNumberPreview();
+    }, 300);
+</script>
+
+</body>
+</html>

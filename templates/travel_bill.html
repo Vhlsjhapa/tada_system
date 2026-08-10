@@ -1,0 +1,446 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <title>दैनिक तथा भ्रमण खर्चको बिल - म.ले.प. फाराम नं. २२४</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 8mm 10mm;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Kalimati', 'Noto Sans Devanagari', Arial, sans-serif;
+            margin: 0;
+            padding: 15px;
+            font-size: 12px;
+            color: #000;
+            background-color: #f8fafc;
+        }
+        .container {
+            width: 100%;
+            max-width: 1080px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 15px 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Print Button */
+        .print-btn-container {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .btn-print {
+            padding: 7px 22px;
+            font-size: 13px;
+            cursor: pointer;
+            background: #1e40af;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-family: inherit;
+            font-weight: 600;
+        }
+        .btn-print:hover {
+            background: #1d4ed8;
+        }
+        @media print {
+            .print-btn-container {
+                display: none;
+            }
+            body {
+                padding: 0;
+                background: #fff;
+                font-size: 11px;
+            }
+            .container {
+                padding: 0;
+                margin: 0;
+                max-width: 100%;
+                box-shadow: none;
+            }
+        }
+
+        /* Top Header */
+        .header-section {
+            position: relative;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .malepa-no {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .office-title-1 {
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .office-title-2 {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 1px;
+        }
+        .office-code {
+            font-size: 11px;
+            margin-top: 1px;
+        }
+        .form-title {
+            font-size: 15px;
+            font-weight: bold;
+            margin-top: 5px;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        /* Meta / Info Section */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        .info-table td {
+            border: none;
+            padding: 3px 0;
+            vertical-align: middle;
+        }
+        .reg-box {
+            display: inline-block;
+            min-width: 65px;
+            padding: 0 6px;
+            height: 20px;
+            border: 1px solid #000;
+            vertical-align: middle;
+            margin-left: 4px;
+            text-align: center;
+            line-height: 20px;
+            font-weight: bold;
+        }
+
+        /* Main Expense Table */
+        .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        .main-table th, .main-table td {
+            border: 1px solid black;
+            padding: 4px 3px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .main-table th {
+            font-weight: bold;
+            font-size: 11px;
+            background-color: #f1f5f9;
+        }
+        .col-num-row td {
+            font-size: 10px;
+            height: 18px;
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+        .data-row td {
+            height: 22px;
+            font-size: 11px;
+        }
+        .empty-row td {
+            height: 22px;
+        }
+
+        /* Bottom Section Grid */
+        .bottom-section {
+            display: flex;
+            width: 100%;
+            align-items: stretch;
+            gap: 8px;
+        }
+        
+        /* Summary Table (Left) */
+        .summary-table-wrap {
+            flex: 0 0 35%;
+        }
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .summary-table td {
+            border: 1px solid black;
+            padding: 3px 5px;
+            font-size: 11px;
+        }
+        .summary-table .amt-col {
+            width: 85px;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        /* Declaration Box (Center) */
+        .declaration-box {
+            flex: 0 0 28%;
+            border: 1px solid black;
+            padding: 6px 8px;
+            font-size: 11px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .declaration-text {
+            line-height: 1.4;
+            margin: 4px 0;
+        }
+
+        /* Approval & Signatures (Right) */
+        .approval-box {
+            flex: 1;
+            padding: 4px 8px;
+            font-size: 11px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .signatures-flex {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+        .sign-col {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- Print Button -->
+    <div class="print-btn-container">
+        <button onclick="window.print()" class="btn-print">🖨️ ल्यान्डस्केपमा बिल प्रिन्ट गर्नुहोस्</button>
+        <a href="/" style="margin-left: 15px; color:#1e40af; text-decoration:none; font-weight:600;">⬅️ ड्यासबोर्डमा फर्कनुहोस्</a>
+    </div>
+
+    <!-- Header Section -->
+    <div class="header-section" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+        <div style="width:110px; text-align:left;">
+            <img src="{% static 'images/nepal_logo.svg' %}" alt="नेपाल सरकार निशान छाप" style="width:68px; height:auto; object-fit:contain;">
+        </div>
+        <div style="flex-grow:1; text-align:center;">
+            <div class="office-title-1">{{ bill.travel_order.parent_body_1|default:"नेपाल सरकार" }}</div>
+            {% if bill.travel_order.parent_body_2 %}<div class="office-title-1" style="font-size:12px; font-weight:normal;">{{ bill.travel_order.parent_body_2 }}</div>{% endif %}
+            <div class="office-title-2">{{ bill.travel_order.office_name }}</div>
+            <div class="office-code">कार्यालय कोड नं.: {{ bill.travel_order.office_code }}</div>
+            <div class="form-title">दैनिक तथा भ्रमण खर्चको बिल</div>
+        </div>
+        <div style="width:110px; text-align:right;">
+            <div class="malepa-no" style="position:static; font-size:11px; font-weight:600;">म.ले.प.फाराम नं: २२४</div>
+        </div>
+    </div>
+
+    <!-- Info / Metadata Section -->
+    <table class="info-table">
+        <tr>
+            <td style="width: 35%;">नामः <b>{{ bill.travel_order.person }}</b></td>
+            <td style="width: 35%;">कर्मचारी संकेत नं: <b>{{ bill.employee_code_no|default:".................." }}</b></td>
+            <td style="width: 30%; text-align: right;">
+                भ्रमण आदेश सि नं. <b>{{ bill.travel_order.order_number|default:"............." }}</b> सँग सम्बन्धित
+            </td>
+        </tr>
+        <tr>
+            <td>पद: <b>{{ bill.employee_designation|default:"................................" }}</b></td>
+            <td>नत्थी रसिद बिल आदिको संख्याः <b>{{ bill.receipt_count|default:"................" }}</b></td>
+            <td style="text-align: right;">
+                भ्रमण प्रतिवेदन दर्ता नं: 
+                <span class="reg-box">{{ bill.final_report_reg_no|default:bill.report_reg_no|default:"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td>कार्यालय: {{ bill.travel_order.office_name }}</td>
+            <td colspan="2">भ्रमणको उद्देश्य: <b>{{ bill.travel_order.purpose }}</b></td>
+        </tr>
+        <tr>
+            <td colspan="3">कर्मचारीको स्थायी ठेगानाः <b>{{ bill.employee_permanent_address|default:"-" }}</b></td>
+        </tr>
+    </table>
+
+    <!-- Main Dynamic Expense Table (Columns 1 to 13 matching Nepal Govt Format) -->
+    <table class="main-table">
+        <thead>
+            <tr>
+                <th colspan="2">देखि</th>
+                <th colspan="2">सम्म</th>
+                <th rowspan="2" style="width: 8%;">भ्रमण/यातायात<br>साधन</th>
+                <th rowspan="2" style="width: 9%;">भ्रमण/यातायात<br>खर्च रू</th>
+                <th colspan="3">दैनिक भत्ता</th>
+                <th colspan="2">फुटकर खर्च</th>
+                <th rowspan="2" style="width: 9%;">कुल जम्मा रू</th>
+                <th rowspan="2" style="width: 8%;">कैफियत</th>
+            </tr>
+            <tr>
+                <th style="width: 9%;">स्थान</th>
+                <th style="width: 8%;">मिति</th>
+                <th style="width: 9%;">स्थान</th>
+                <th style="width: 8%;">मिति</th>
+                <th style="width: 5%;">दिन</th>
+                <th style="width: 6%;">दर</th>
+                <th style="width: 8%;">जम्मा रू</th>
+                <th style="width: 9%;">विवरण</th>
+                <th style="width: 8%;">जम्मा रू</th>
+            </tr>
+            <!-- Column Numbers 1 to 13 -->
+            <tr class="col-num-row">
+                <td>१</td>
+                <td>२</td>
+                <td>३</td>
+                <td>४</td>
+                <td>५</td>
+                <td>६</td>
+                <td>७</td>
+                <td>८</td>
+                <td>९</td>
+                <td>१०</td>
+                <td>११</td>
+                <td>१२</td>
+                <td>१३</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% if items %}
+                {% for item in items %}
+                <tr class="data-row">
+                    <td style="text-align: left; padding-left: 4px;">{{ item.departure_place }}</td>
+                    <td>{{ item.departure_date|default:"" }}</td>
+                    <td style="text-align: left; padding-left: 4px;">{{ item.arrival_place }}</td>
+                    <td>{{ item.arrival_date|default:"" }}</td>
+                    <td>{{ item.transport_medium|default:"-" }}</td>
+                    <td style="text-align: right; padding-right: 4px;">{{ item.transport_fare }}</td>
+                    <td>{{ item.daily_allowance_days }}</td>
+                    <td>{{ item.daily_allowance_rate }}</td>
+                    <td style="text-align: right; padding-right: 4px;">{{ item.get_daily_allowance_total|default:item.daily_allowance_total }}</td>
+                    <td>{{ item.misc_desc|default:"" }}</td>
+                    <td style="text-align: right; padding-right: 4px;">{{ item.misc_amount }}</td>
+                    <td style="text-align: right; padding-right: 4px; font-weight: bold;">{{ item.get_row_total|default:item.row_total }}</td>
+                    <td>{{ item.remarks|default:"" }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <!-- Single default summary row if no items are created -->
+                <tr class="data-row">
+                    <td style="text-align: left; padding-left: 4px;">झापा</td>
+                    <td>{{ bill.travel_order.start_date }}</td>
+                    <td style="text-align: left; padding-left: 4px;">{{ bill.travel_order.destination }}</td>
+                    <td>{{ bill.travel_order.end_date }}</td>
+                    <td>सार्वजनिक सवारी</td>
+                    <td style="text-align: right; padding-right: 4px;">{{ bill.total_transport }}</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td style="text-align: right; padding-right: 4px;">{{ bill.total_daily_allowance }}</td>
+                    <td>-</td>
+                    <td style="text-align: right; padding-right: 4px;">{{ bill.total_misc }}</td>
+                    <td style="text-align: right; padding-right: 4px; font-weight: bold;">{{ bill.grand_total }}</td>
+                    <td></td>
+                </tr>
+            {% endif %}
+
+            <!-- Blank Rows for clean print layout -->
+            {% for _ in empty_rows %}
+            <tr class="empty-row">
+                <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+            </tr>
+            {% endfor %}
+
+            <!-- Grand Total Row -->
+            <tr style="font-weight: bold; background-color: #f1f5f9;">
+                <td colspan="5" style="text-align: center;">जम्मा (Total)</td>
+                <td style="text-align: right; padding-right: 4px;">{{ bill.total_transport }}</td>
+                <td colspan="2"></td>
+                <td style="text-align: right; padding-right: 4px;">{{ bill.total_daily_allowance }}</td>
+                <td></td>
+                <td style="text-align: right; padding-right: 4px;">{{ bill.total_misc }}</td>
+                <td style="text-align: right; padding-right: 4px; font-weight: bold;">{{ bill.grand_total }}</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Bottom Section: Summary Table, Employee Declaration, Approval Signatures -->
+    <div class="bottom-section">
+        
+        <!-- Left: Expense Summary Box -->
+        <div class="summary-table-wrap">
+            <table class="summary-table">
+                <tr>
+                    <td>१. भ्रमण/यातायात खर्च (महल ६ को जम्मा रू )</td>
+                    <td class="amt-col">{{ bill.total_transport }}</td>
+                </tr>
+                <tr>
+                    <td>२. दैनिक भत्ता (महल ९ को जम्मा रू )</td>
+                    <td class="amt-col">{{ bill.total_daily_allowance }}</td>
+                </tr>
+                <tr>
+                    <td>४. फुटकर खर्च (महल ११ को जम्मा रू )</td>
+                    <td class="amt-col">{{ bill.total_misc }}</td>
+                </tr>
+                <tr style="font-weight: bold; background:#f8fafc;">
+                    <td>५ कुल जम्मा (महल १२ को जम्मा रू )</td>
+                    <td class="amt-col">{{ bill.grand_total }}</td>
+                </tr>
+                <tr>
+                    <td>६. भ्रमण पेस्की रू .</td>
+                    <td class="amt-col">{{ bill.advance_taken|default:"०" }}</td>
+                </tr>
+                <tr style="font-weight: bold; background:#f1f5f9;">
+                    <td>७ खुद भुक्तानी पाउने रकम रू.</td>
+                    <td class="amt-col">{{ bill.net_payable }}</td>
+                </tr>
+            </table>
+            {% if bill.amount_in_words %}
+            <div style="font-size: 10.5px; margin-top: 4px; font-weight: 600;">
+                (अक्षरमा: {{ bill.amount_in_words }})
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Center: Employee Declaration Box with Border -->
+        <div class="declaration-box">
+            <div>
+                <div>स्वीकृत भ्रमण आदेश नं. <b>{{ bill.travel_order.order_number|default:"......." }}</b> मिति: <b>{{ bill.travel_order.order_date|default:"........." }}</b></div>
+                <div class="declaration-text">
+                    पेस भएको ब्यहोरा ठीक छ झुट्टा ठहरे प्रचलित कानुन बमोजिम सहने छु बुझाउने छु ।
+                </div>
+            </div>
+            <div>
+                <div>भ्रमण गर्ने कर्मचारीको दस्तखतः ....................</div>
+                <div style="margin-top: 4px;">मितिः <b>{{ bill.bill_date|default:"..................." }}</b></div>
+            </div>
+        </div>
+
+        <!-- Right: Approvals & Verification Signatures -->
+        <div class="approval-box">
+            <div style="text-align: right; padding-right: 15px;">
+                स्वीकृत रकम रू.: .....................................
+            </div>
+            <div class="signatures-flex">
+                <div class="sign-col" style="text-align: left;">
+                    <div>जांच गर्नेः...................</div>
+                    <div style="margin-top: 5px;">मितिः ........................</div>
+                </div>
+                <div class="sign-col" style="text-align: right; padding-right: 15px;">
+                    <div>स्वीकृत गर्नेः...................</div>
+                    <div style="margin-top: 5px;">मितिः ........................</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

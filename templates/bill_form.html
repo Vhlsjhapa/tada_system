@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>नयाँ दैनिक तथा भ्रमण खर्चको बिल - म.ले.प. फाराम नं. २२४</title>
+    <link rel="stylesheet" href="/static/css/nepali_calendar.css">
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --border: #cbd5e1;
+            --bg: #f8fafc;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Kalimati', 'Noto Sans Devanagari', Arial, sans-serif;
+            background-color: var(--bg);
+            color: #0f172a;
+            padding: 20px;
+        }
+        .form-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 24px 28px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+        }
+        .form-header {
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .form-header h2 {
+            font-size: 19px;
+            color: var(--primary-dark);
+        }
+        .section-title {
+            font-size: 14.5px;
+            font-weight: 700;
+            margin: 18px 0 10px 0;
+            color: #0369a1;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 4px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        label {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #334155;
+        }
+        input, select, textarea {
+            padding: 7px 10px;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            font-size: 13.5px;
+            font-family: inherit;
+            outline: none;
+        }
+        input:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+        }
+        
+        /* Items Table */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 12px;
+        }
+        .items-table th, .items-table td {
+            border: 1px solid #cbd5e1;
+            padding: 5px 4px;
+            text-align: center;
+        }
+        .items-table th {
+            background: #f1f5f9;
+            font-weight: 600;
+        }
+        .items-table input {
+            width: 100%;
+            padding: 4px 6px;
+            font-size: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 3px;
+        }
+        .btn-add-row {
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px dashed #0284c7;
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+            font-size: 12.5px;
+        }
+        .btn-add-row:hover {
+            background: #bae6fd;
+        }
+        .btn-del-row {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            border-radius: 3px;
+            padding: 3px 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Summary Calculation Box */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            background: #f8fafc;
+            padding: 14px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            margin: 16px 0;
+        }
+        .summary-card {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .summary-card label {
+            font-size: 11.5px;
+            color: #64748b;
+        }
+        .summary-card input {
+            font-weight: bold;
+            background: #fff;
+            color: #0f172a;
+        }
+
+        .btn-submit {
+            background: #0284c7;
+            color: white;
+            padding: 10px 28px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14.5px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+        .btn-submit:hover {
+            background: #0369a1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <div class="form-header">
+        <div>
+            <h2>💰 नयाँ दैनिक तथा भ्रमण खर्चको बिल (म.ले.प. फाराम नं. २२४)</h2>
+            <p style="font-size:12px; color:#64748b; margin-top:2px;">भ्रमण आदेश छान्नुहोस् र खर्चका महलहरू प्रविष्ट गर्नुहोस् (सबै हिसाब स्वतः हुनेछ)</p>
+        </div>
+        <a href="/" style="color:#64748b; text-decoration:none; font-weight:600;">⬅️ ड्यासबोर्डमा फर्कनुहोस्</a>
+    </div>
+
+    {% if error_message %}
+    <div style="background:#fef2f2; border:1.5px solid #ef4444; color:#991b1b; padding:12px 18px; border-radius:8px; margin-bottom:18px; font-size:13.5px; line-height:1.5;">
+        <b>⚠️ त्रुटि (Validation Error):</b> {{ error_message }}
+    </div>
+    {% endif %}
+
+    {% if not orders %}
+    <div style="background:#eff6ff; border:1.5px solid #3b82f6; color:#1e40af; padding:14px 18px; border-radius:8px; margin-bottom:18px; font-size:13.5px; line-height:1.6;">
+        ℹ️ <b>जानकारी:</b> हाल खर्च बिल बनाउन बाँकी कुनै पनि नयाँ भ्रमण आदेश उपलब्ध छैन। सबै भ्रमण आदेशहरूको बिल पहिले नै तयार भइसकेको छ।<br>
+        👉 नयाँ खर्च बिल बनाउनको लागि पहिले <a href="/order/new/" style="color:#1d4ed8; font-weight:bold; text-decoration:underline;">➕ नयाँ राष्ट्रिय भ्रमण आदेश (म.ले.प. २२३) सिर्जना गर्नुहोस्</a> अथवा विद्यमान बिलहरू <a href="/" style="color:#1d4ed8; font-weight:bold; text-decoration:underline;">ड्यासबोर्ड</a>बाट हेर्नुहोस्।
+    </div>
+    {% endif %}
+
+    <form method="POST" action="/bill/new/" id="billForm">
+        {% csrf_token %}
+
+        <!-- १. सम्बन्धित भ्रमण आदेश -->
+        <div class="section-title">१. सम्बन्धित राष्ट्रिय भ्रमण आदेश छान्नुहोस्</div>
+        
+        <div class="form-grid">
+            <div class="form-group" style="grid-column: span 2;">
+                <label>भ्रमण आदेश (Travel Order) *</label>
+                <select name="travel_order" id="id_travel_order" required {% if not orders %}disabled{% endif %}>
+                    <option value="">-- {% if orders %}भ्रमण आदेश छान्नुहोस्{% else %}कुनै पनि बाँकी भ्रमण आदेश छैन{% endif %} --</option>
+                    {% for ord in orders %}
+                    <option value="{{ ord.id }}" {% if preselected_order_id == ord.id|stringformat:"s" %}selected{% elif forloop.first and not preselected_order_id %}selected{% endif %}>
+                        आदेश नं: {{ ord.order_number }} | {{ ord.person }} ({{ ord.destination }} - {{ ord.start_date }} देखि {{ ord.end_date }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>बिल पेश गरेको मिति (नेपाली पात्रो) *</label>
+                <input type="text" name="bill_date" id="id_bill_date" class="nepali-date-picker" value="{% if form_data.bill_date %}{{ form_data.bill_date }}{% else %}२०८२/०४/२५{% endif %}" required {% if not orders %}disabled{% endif %}>
+                <small style="font-size:11px; color:#64748b; margin-top:2px;">(भ्रमण आदेशको अन्तिम मिति वा सो भन्दा पछिको मिति हुनुपर्छ)</small>
+            </div>
+        </div>
+
+        <!-- Order / Employee Info Auto-Fill Summary Card -->
+        <div id="order_info_card" style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:14px 18px; margin-bottom:16px; font-size:13px; color:#0369a1; display:none;">
+            <div style="font-weight:bold; margin-bottom:6px; font-size:13.5px; border-bottom:1px dashed #7dd3fc; padding-bottom:4px; display:flex; justify-content:space-between;">
+                <span>📋 छानिएको भ्रमण आदेश र कर्मचारी विवरण (Auto-Filled from Travel Order)</span>
+                <span id="card_report_status" style="font-weight:normal; font-size:12px;"></span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:8px; color:#0f172a;">
+                <div>कर्मचारीको नामथर: <b id="card_person">-</b></div>
+                <div>कर्मचारी संकेत नं: <b id="card_code_no">-</b></div>
+                <div>पद: <b id="card_designation">-</b></div>
+                <div>कार्यालय: <b id="card_office">-</b></div>
+                <div>स्थायी ठेगाना: <b id="card_perm_address">-</b></div>
+                <div>भ्रमण स्थान: <b id="card_destination">-</b></div>
+                <div>भ्रमण अवधि: <b id="card_dates">-</b></div>
+                <div>भ्रमण दिन: <b id="card_duration_calc">-</b></div>
+                <div>प्रतिवेदन दर्ता नं: <b id="card_report_reg_no">-</b></div>
+                <div>माग गरेको पेस्की: <b id="card_advance">रु. ०</b></div>
+            </div>
+            <div id="office_veh_notice" style="display:none; background:#fef3c7; border:1px solid #f59e0b; color:#92400e; padding:8px 12px; border-radius:6px; margin-top:10px; font-size:13px; font-weight:600;">
+                🚗 <b>सूचना:</b> यस भ्रमण आदेशमा <u>कार्यालयको सवारी साधन</u> प्रयोग गरिएको उल्लेख भएकाले नियम अनुसार महल ६ (यातायात खर्च) शून्य (०) मात्र रहने गरी लक गरिएको छ।
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label>कर्मचारीको स्थायी ठेगाना (Permanent Address)</label>
+                <input type="text" name="address" id="id_address" value="{% if form_data.address %}{{ form_data.address }}{% endif %}" placeholder="कर्मचारीको स्थायी ठेगाना (जस्तै: भद्रपुर-५, झापा)">
+            </div>
+            <div class="form-group">
+                <label>भ्रमण प्रतिवेदन दर्ता नं.</label>
+                <input type="text" name="report_reg_no" id="id_report_reg_no" value="{% if form_data.report_reg_no %}{{ form_data.report_reg_no }}{% endif %}" placeholder="जस्तै: १०४">
+            </div>
+            <div class="form-group">
+                <label>नत्थी रसिद/बिल संख्या</label>
+                <input type="text" name="receipt_count" id="id_receipt_count" value="{% if form_data.receipt_count %}{{ form_data.receipt_count }}{% endif %}" placeholder="जस्तै: २ थान (खाली छोड्न सकिने)">
+            </div>
+        </div>
+
+        <!-- Paying Agency Selection -->
+        <div class="form-grid" style="background:#f8fafc; border:1px solid #e2e8f0; padding:12px 14px; border-radius:8px; margin-bottom:14px;">
+            <div class="form-group" style="grid-column: span 2;">
+                <label>भुक्तानी दिने निकाय (Paying Agency) *</label>
+                <select name="paying_agency_type" id="id_paying_agency_type" onchange="toggleExternalAgencyField()">
+                    <option value="INTERNAL">यसै कार्यालयबाट भुक्तानी (Internal - भ्रमण अभिलेख खाता / Travel Ledger मा समावेश हुने)</option>
+                    <option value="EXTERNAL">अन्य सरकारी निकाय/आयोजनाबाट भुक्तानी (External - भ्रमण खातामा खर्च समावेश नहुने)</option>
+                </select>
+            </div>
+            <div class="form-group" id="external_agency_box" style="display:none; grid-column: span 2;">
+                <label>भुक्तानी दिने अन्य निकायको नाम (External Agency / Project Name)</label>
+                <input type="text" name="external_agency_name" id="id_external_agency_name" placeholder="जस्तै: कृषि विकास निर्देशनालय / प्रदेश मन्त्रालय / आयोजना" value="{% if form_data.external_agency_name %}{{ form_data.external_agency_name }}{% endif %}">
+                <small style="color:#0369a1; font-size:11px;">(कर्मचारीले अन्य कार्यालयबाट भुक्तानी पाए तापनि यस प्रणालीमा बिल सुरक्षित हुनेछ तर यस कार्यालयको आन्तरिक भ्रमण खातामा जोडिने छैन)</small>
+            </div>
+        </div>
+
+        <!-- २. १३ महल खर्च तालिका (Columns 1-13) -->
+        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>२. खर्च तथा भत्ताका विवरणहरू (महल १ देखि १३)</span>
+            <button type="button" class="btn-add-row" id="btnAddRow">+ नयाँ पंक्ति थप्नुहोस्</button>
+        </div>
+
+        <div style="overflow-x:auto;">
+            <table class="items-table" id="billItemsTable">
+                <thead>
+                    <tr>
+                        <th colspan="2">देखि</th>
+                        <th colspan="2">सम्म</th>
+                        <th rowspan="2" style="width:10%;">साधन (५)</th>
+                        <th rowspan="2" style="width:10%;">यातायात खर्च रू (६)</th>
+                        <th colspan="3">दैनिक भत्ता</th>
+                        <th colspan="2">फुटकर खर्च</th>
+                        <th rowspan="2" style="width:10%;">जम्मा रू (१२)</th>
+                        <th rowspan="2" style="width:6%;">हटाउने</th>
+                    </tr>
+                    <tr>
+                        <th style="width:10%;">स्थान (१)</th>
+                        <th style="width:9%;">मिति (२)</th>
+                        <th style="width:10%;">स्थान (३)</th>
+                        <th style="width:9%;">मिति (४)</th>
+                        <th style="width:7%;" title="भ्रमण अवधिको हिसाब: अन्तिम दिन १/४ (०.२५) हिसाब हुनेछ">दिन (७) ℹ️</th>
+                        <th style="width:7%;">दर (८)</th>
+                        <th style="width:8%;">जम्मा (९)</th>
+                        <th style="width:10%;">विवरण (१०)</th>
+                        <th style="width:8%;">जम्मा (११)</th>
+                    </tr>
+                </thead>
+                <tbody id="billItemsBody">
+                    <!-- Default Row 1 -->
+                    <tr class="dynamic-bill-row">
+                        <td><input type="text" id="row_dep_place" name="departure_place[]" value="भद्रपुर, झापा"></td>
+                        <td><input type="text" id="row_dep_date" name="departure_date[]" class="nepali-date-picker" value="२०८२/०४/२१"></td>
+                        <td><input type="text" id="row_arr_place" name="arrival_place[]" value="विर्तामोड, झापा"></td>
+                        <td><input type="text" id="row_arr_date" name="arrival_date[]" class="nepali-date-picker" value="२०८२/०४/२३"></td>
+                        <td><input type="text" name="transport_medium[]" value="सार्वजनिक सवारी"></td>
+                        <td><input type="number" name="transport_fare[]" class="calc-field" value="500"></td>
+                        <td><input type="number" step="0.01" name="daily_allowance_days[]" id="row_da_days" class="calc-field" value="2.25"></td>
+                        <td><input type="number" name="daily_allowance_rate[]" class="calc-field" value="1600"></td>
+                        <td><input type="number" name="daily_allowance_total[]" readonly style="background:#f1f5f9;" value="3600"></td>
+                        <td><input type="text" name="misc_desc[]" placeholder="स्टेशनरी/स्थानीय"></td>
+                        <td><input type="number" name="misc_amount[]" class="calc-field" value="300"></td>
+                        <td><input type="number" name="row_total[]" readonly style="background:#f1f5f9; font-weight:bold;" value="4400"></td>
+                        <td><button type="button" class="btn-del-row" onclick="deleteRow(this)">✕</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ३. स्वतः हिसाब सारांश (Auto Calculations) -->
+        <div class="section-title">३. खर्च तथा भुक्तानीको स्वतः हिसाब (Calculations Summary)</div>
+
+        <div class="summary-grid">
+            <div class="summary-card">
+                <label>१. जम्मा यातायात खर्च रू (महल ६)</label>
+                <input type="number" name="total_transport" id="id_total_transport" readonly value="500">
+            </div>
+            <div class="summary-card">
+                <label>२. जम्मा दैनिक भत्ता रू (महल ९)</label>
+                <input type="number" name="total_daily_allowance" id="id_total_daily_allowance" readonly value="3600">
+            </div>
+            <div class="summary-card">
+                <label>४. जम्मा फुटकर खर्च रू (महल ११)</label>
+                <input type="number" name="total_misc" id="id_total_misc" readonly value="300">
+                <div id="misc_limit_warning" style="display:none; color:#dc2626; font-size:11px; font-weight:bold; margin-top:2px;">⚠️ फुटकर खर्चको अधिकतम सीमा रु. २,०००/- मात्र हो!</div>
+            </div>
+            <div class="summary-card">
+                <label>५. कुल जम्मा खर्च रू (१+२+४)</label>
+                <input type="number" name="grand_total" id="id_grand_total" readonly style="color:#0284c7;" value="4400">
+            </div>
+            <div class="summary-card">
+                <label>६. भ्रमण पेस्की रकम रू.</label>
+                <input type="number" name="advance_taken" id="id_advance_taken" value="0">
+            </div>
+            <div class="summary-card">
+                <label>७. खुद भुक्तानी पाउने रकम रू.</label>
+                <input type="number" name="net_payable" id="id_net_payable" readonly style="color:#15803d; font-size:15px;" value="4400">
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+            <label>खुद भुक्तानी पाउने रकम अक्षरमा (Nepali Words Auto-Generated):</label>
+            <input type="text" name="amount_in_words" id="id_amount_in_words" value="चार हजार चार सय रूपैयाँ मात्र">
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:12px; align-items:center;">
+            <a href="/" style="color:#64748b; text-decoration:none; font-weight:600;">रद्द गर्नुहोस्</a>
+            <button type="submit" class="btn-submit" id="btnSubmitBill" {% if not orders %}disabled style="opacity:0.5; cursor:not-allowed;"{% endif %}>💾 सुरक्षित गरी म.ले.प. २२४ प्रिन्ट हेर्नुहोस्</button>
+        </div>
+
+    </form>
+</div>
+
+<script src="/static/js/nepali_calendar.js"></script>
+<script>
+    window.isCurrentOrderOfficeVehicle = false;
+    window.currentOrderEndDate = '';
+    window.currentOrderStartDate = '';
+    window.currentDaRate = 1600;
+
+    function toggleExternalAgencyField() {
+        const agencySel = document.getElementById('id_paying_agency_type');
+        const extBox = document.getElementById('external_agency_box');
+        if (agencySel && extBox) {
+            extBox.style.display = (agencySel.value === 'EXTERNAL') ? 'block' : 'none';
+        }
+    }
+
+    function applyOfficeVehicleConstraint(isOffice) {
+        window.isCurrentOrderOfficeVehicle = isOffice;
+        const notice = document.getElementById('office_veh_notice');
+        if (notice) {
+            notice.style.display = isOffice ? 'block' : 'none';
+        }
+
+        const rows = document.querySelectorAll('.dynamic-bill-row');
+        rows.forEach(row => {
+            const fareInput = row.querySelector('input[name="transport_fare[]"], input[name*="transport_fare"]');
+            const medInput = row.querySelector('input[name="transport_medium[]"], input[name*="transport_medium"]');
+            if (fareInput) {
+                if (isOffice) {
+                    fareInput.value = 0;
+                    fareInput.readOnly = true;
+                    fareInput.style.backgroundColor = '#f1f5f9';
+                    fareInput.style.cursor = 'not-allowed';
+                    fareInput.setAttribute('title', 'कार्यालयको सवारी साधन भएकाले यातायात खर्च शून्य (०) मात्र हुन्छ');
+                } else {
+                    fareInput.readOnly = false;
+                    fareInput.style.backgroundColor = '';
+                    fareInput.style.cursor = '';
+                    fareInput.removeAttribute('title');
+                }
+            }
+            if (medInput && isOffice) {
+                if (!medInput.value || medInput.value === 'सार्वजनिक सवारी') {
+                    medInput.value = 'कार्यालयको सवारी';
+                }
+            }
+        });
+
+        NepaliCalendar.calculateBillTotals();
+        checkMiscLimit();
+    }
+
+    function checkMiscLimit() {
+        const totalMiscEl = document.getElementById('id_total_misc');
+        const warnEl = document.getElementById('misc_limit_warning');
+        if (!totalMiscEl) return 0;
+        
+        let totalMisc = parseFloat(NepaliCalendar.toEnglishDigits(totalMiscEl.value || '0')) || 0;
+        if (totalMisc > 2000) {
+            totalMiscEl.style.borderColor = '#ef4444';
+            totalMiscEl.style.backgroundColor = '#fee2e2';
+            totalMiscEl.style.color = '#b91c1c';
+            if (warnEl) warnEl.style.display = 'block';
+        } else {
+            totalMiscEl.style.borderColor = '';
+            totalMiscEl.style.backgroundColor = '';
+            totalMiscEl.style.color = '';
+            if (warnEl) warnEl.style.display = 'none';
+        }
+        return totalMisc;
+    }
+
+    // Handle Travel Order selection auto-fill
+    function handleOrderChange() {
+        const select = document.getElementById('id_travel_order');
+        if (!select || !select.value) {
+            document.getElementById('order_info_card').style.display = 'none';
+            applyOfficeVehicleConstraint(false);
+            window.currentOrderEndDate = '';
+            window.currentOrderStartDate = '';
+            return;
+        }
+
+        const orderId = select.value;
+        fetch(`/api/order/${orderId}/`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    window.currentOrderEndDate = data.end_date || '';
+                    window.currentOrderStartDate = data.start_date || '';
+
+                    // Show Preview Card
+                    const card = document.getElementById('order_info_card');
+                    card.style.display = 'block';
+                    document.getElementById('card_person').textContent = data.person || '-';
+                    document.getElementById('card_code_no').textContent = data.code_no || '-';
+                    document.getElementById('card_designation').textContent = data.designation || '-';
+                    document.getElementById('card_office').textContent = data.office || '-';
+                    document.getElementById('card_perm_address').textContent = data.permanent_address || 'नखुलेको';
+                    document.getElementById('card_destination').textContent = data.destination || '-';
+                    document.getElementById('card_dates').textContent = (data.start_date || '') + ' देखि ' + (data.end_date || '') + ' सम्म';
+                    
+                    const durationText = data.duration_days ? `${NepaliCalendar.toNepaliDigits(data.duration_days)} दिन (दैनिक भत्ता दिन: ${NepaliCalendar.toNepaliDigits(data.recommended_da_days)} दिन)` : '-';
+                    document.getElementById('card_duration_calc').textContent = durationText;
+
+                    const reportReg = data.report_reg_no || 'दर्ता हुन बाँकी';
+                    document.getElementById('card_report_reg_no').textContent = reportReg;
+                    
+                    document.getElementById('card_advance').textContent = 'रु. ' + (data.advance_amount || '०');
+
+                    // Auto-fill address strictly from employee's permanent address (never office!)
+                    const addrInput = document.getElementById('id_address');
+                    if (data.permanent_address) {
+                        addrInput.value = data.permanent_address;
+                    }
+
+                    // Auto-fill report registration number if available
+                    const regInput = document.getElementById('id_report_reg_no');
+                    if (regInput && data.report_reg_no) {
+                        regInput.value = data.report_reg_no;
+                    }
+
+                    // Auto-sync bill submission date if earlier than order end date
+                    const billDateInput = document.getElementById('id_bill_date');
+                    if (billDateInput && data.end_date) {
+                        if (!billDateInput.value || NepaliCalendar.compareBsDates(billDateInput.value, data.end_date) === -1) {
+                            billDateInput.value = data.end_date;
+                        }
+                    }
+
+                    // Auto-fill Advance
+                    const advInput = document.getElementById('id_advance_taken');
+                    if (advInput && data.advance_amount) {
+                        advInput.value = parseInt(data.advance_amount, 10) || 0;
+                    }
+
+                    // Auto-fill first row destination & dates & recommended da days
+                    const arrPlace = document.getElementById('row_arr_place');
+                    const depDate = document.getElementById('row_dep_date');
+                    const arrDate = document.getElementById('row_arr_date');
+                    const daDays = document.getElementById('row_da_days');
+
+                    if (arrPlace && data.destination) arrPlace.value = data.destination;
+                    if (depDate && data.start_date) {
+                        depDate.value = data.start_date;
+                        depDate.setAttribute('data-min-date', data.start_date);
+                        depDate.setAttribute('data-max-date', data.end_date);
+                    }
+                    if (arrDate && data.end_date) {
+                        arrDate.value = data.end_date;
+                        arrDate.setAttribute('data-min-date', data.start_date);
+                        arrDate.setAttribute('data-max-date', data.end_date);
+                    }
+
+                    // Update min/max for all existing row date inputs
+                    document.querySelectorAll('.dynamic-bill-row input[name*="date"]').forEach(inp => {
+                        inp.setAttribute('data-min-date', data.start_date || '');
+                        inp.setAttribute('data-max-date', data.end_date || '');
+                    });
+                    
+                    // Set Daily Allowance Rate across rows if available
+                    if (data.daily_allowance_rate) {
+                        window.currentDaRate = data.daily_allowance_rate;
+                        document.querySelectorAll('.dynamic-bill-row input[name="daily_allowance_rate[]"], .dynamic-bill-row input[name*="daily_allowance_rate"]').forEach(rInp => {
+                            rInp.value = data.daily_allowance_rate;
+                        });
+                    }
+
+                    // Auto-sync Paying Agency
+                    if (data.paying_agency_type) {
+                        const pSel = document.getElementById('id_paying_agency_type');
+                        if (pSel) {
+                            pSel.value = data.paying_agency_type;
+                            toggleExternalAgencyField();
+                        }
+                    }
+                    if (data.external_agency_name) {
+                        const extInp = document.getElementById('id_external_agency_name');
+                        if (extInp) extInp.value = data.external_agency_name;
+                    }
+
+                    // Auto-calculate row-level allowance days using government travel rules
+                    NepaliCalendar.autoCalculateRowAllowanceDays();
+
+                    // Enforce Office Vehicle constraint only when office vehicle is exclusive
+                    applyOfficeVehicleConstraint(Boolean(data.is_office_vehicle_only));
+
+                    // Recalculate bill totals
+                    NepaliCalendar.calculateBillTotals();
+                }
+            })
+            .catch(err => console.error('Error fetching order details:', err));
+    }
+
+    document.getElementById('id_travel_order')?.addEventListener('change', handleOrderChange);
+
+    // Prevent typing non-zero fare if office vehicle is selected
+    document.addEventListener('input', (e) => {
+        if (window.isCurrentOrderOfficeVehicle && e.target && e.target.name && e.target.name.includes('transport_fare')) {
+            e.target.value = 0;
+            NepaliCalendar.calculateBillTotals();
+        }
+        checkMiscLimit();
+    });
+
+    // Add dynamic row
+    document.getElementById('btnAddRow')?.addEventListener('click', () => {
+        const tbody = document.getElementById('billItemsBody');
+        const rows = tbody.querySelectorAll('.dynamic-bill-row');
+        const lastRow = rows[rows.length - 1];
+        
+        let defaultDepDate = window.currentOrderStartDate || '';
+        let defaultArrDate = window.currentOrderEndDate || '';
+        let defaultDepPlace = '';
+        
+        if (lastRow) {
+            const prevArrDateInput = lastRow.querySelector('input[name="arrival_date[]"], input[name*="arrival_date"]');
+            const prevArrPlaceInput = lastRow.querySelector('input[name="arrival_place[]"], input[name*="arrival_place"]');
+            if (prevArrDateInput && prevArrDateInput.value) {
+                defaultDepDate = prevArrDateInput.value;
+            }
+            if (prevArrPlaceInput && prevArrPlaceInput.value) {
+                defaultDepPlace = prevArrPlaceInput.value;
+            }
+        }
+
+        const row = document.createElement('tr');
+        row.className = 'dynamic-bill-row';
+        const isOffice = window.isCurrentOrderOfficeVehicle;
+        const defaultMedium = isOffice ? 'कार्यालयको सवारी' : 'सार्वजनिक सवारी';
+        const fareStyle = isOffice ? 'readonly style="background:#f1f5f9; cursor:not-allowed;" title="कार्यालयको सवारी भएकाले ० मात्र"' : '';
+
+        const defaultRate = window.currentDaRate || 1600;
+        row.innerHTML = `
+            <td><input type="text" name="departure_place[]" value="${defaultDepPlace}" placeholder="स्थान"></td>
+            <td><input type="text" name="departure_date[]" class="nepali-date-picker" value="${defaultDepDate}" placeholder="मिति" data-min-date="${window.currentOrderStartDate || ''}" data-max-date="${window.currentOrderEndDate || ''}"></td>
+            <td><input type="text" name="arrival_place[]" placeholder="स्थान"></td>
+            <td><input type="text" name="arrival_date[]" class="nepali-date-picker" value="${defaultArrDate}" placeholder="मिति" data-min-date="${window.currentOrderStartDate || ''}" data-max-date="${window.currentOrderEndDate || ''}"></td>
+            <td><input type="text" name="transport_medium[]" value="${defaultMedium}"></td>
+            <td><input type="number" name="transport_fare[]" class="calc-field" value="0" ${fareStyle}></td>
+            <td><input type="number" step="0.01" name="daily_allowance_days[]" class="calc-field" value="0.25"></td>
+            <td><input type="number" name="daily_allowance_rate[]" class="calc-field" value="${defaultRate}"></td>
+            <td><input type="number" name="daily_allowance_total[]" readonly style="background:#f1f5f9;" value="400"></td>
+            <td><input type="text" name="misc_desc[]" placeholder="विवरण"></td>
+            <td><input type="number" name="misc_amount[]" class="calc-field" value="0"></td>
+            <td><input type="number" name="row_total[]" readonly style="background:#f1f5f9; font-weight:bold;" value="400"></td>
+            <td><button type="button" class="btn-del-row" onclick="deleteRow(this)">✕</button></td>
+        `;
+        tbody.appendChild(row);
+        NepaliCalendar.attachDatePickers();
+        NepaliCalendar.autoCalculateRowAllowanceDays();
+        NepaliCalendar.calculateBillTotals();
+        checkMiscLimit();
+    });
+
+    function deleteRow(btn) {
+        const row = btn.closest('tr');
+        if (document.querySelectorAll('.dynamic-bill-row').length > 1) {
+            row.remove();
+            NepaliCalendar.autoCalculateRowAllowanceDays();
+            NepaliCalendar.calculateBillTotals();
+            checkMiscLimit();
+        } else {
+            alert('कम्तिमा एउटा पंक्ति अनिवार्य छ।');
+        }
+    }
+
+    // Client-side Validation on Submit
+    document.getElementById('billForm')?.addEventListener('submit', function(e) {
+        const billDateInput = document.getElementById('id_bill_date');
+        const billDate = billDateInput ? billDateInput.value.trim() : '';
+
+        // 1. Check Bill Submission Date >= Order End Date
+        if (window.currentOrderEndDate && billDate) {
+            const cmp = NepaliCalendar.compareBsDates(billDate, window.currentOrderEndDate);
+            if (cmp === -1) {
+                e.preventDefault();
+                alert(`⚠️ बिल पेश गरेको मिति (${billDate}) राष्ट्रिय भ्रमण आदेशको अन्तिम मिति (${window.currentOrderEndDate}) वा सो भन्दा पछिको हुनुपर्दछ।`);
+                billDateInput.focus();
+                return false;
+            }
+        }
+
+        // 2. Check Misc Limit <= 2000
+        const totalMisc = checkMiscLimit();
+        if (totalMisc > 2000) {
+            e.preventDefault();
+            alert(`⚠️ दैनिक तथा भ्रमण खर्चको बिलमा फुटकर खर्च (महल ११) को कुल जोड बढीमा रु. २,०००/- सम्म मात्र हुन सक्छ।\n(हालको जम्मा फुटकर खर्च: रु. ${totalMisc}/-)`);
+            const totalMiscEl = document.getElementById('id_total_misc');
+            if (totalMiscEl) totalMiscEl.focus();
+            return false;
+        }
+
+        // 3. Strict Travel Row Date Bounds Validation
+        const rows = document.querySelectorAll('.dynamic-bill-row');
+        if (rows.length === 0) {
+            e.preventDefault();
+            alert('⚠️ कम्तिमा एउटा भ्रमण विवरण (पंक्ति) प्रविष्ट गर्नुहोस्।');
+            return false;
+        }
+
+        if (window.currentOrderStartDate && window.currentOrderEndDate) {
+            // First row dep date check
+            const firstDepInput = rows[0].querySelector('input[name="departure_date[]"], input[name*="departure_date"]');
+            const firstDep = firstDepInput ? firstDepInput.value.trim() : '';
+            if (firstDep && NepaliCalendar.compareBsDates(firstDep, window.currentOrderStartDate) !== 0) {
+                e.preventDefault();
+                alert(`⚠️ पहिलो पंक्तिको प्रस्थान मिति (२) भ्रमण आदेशको शुरु मिति (${window.currentOrderStartDate}) नै हुनुपर्दछ।`);
+                if (firstDepInput) firstDepInput.focus();
+                return false;
+            }
+
+            // Last row arr date check
+            const lastArrInput = rows[rows.length - 1].querySelector('input[name="arrival_date[]"], input[name*="arrival_date"]');
+            const lastArr = lastArrInput ? lastArrInput.value.trim() : '';
+            if (lastArr && NepaliCalendar.compareBsDates(lastArr, window.currentOrderEndDate) !== 0) {
+                e.preventDefault();
+                alert(`⚠️ अन्तिम पंक्तिको आगमन मिति (४) भ्रमण आदेशको समाप्त मिति (${window.currentOrderEndDate}) नै हुनुपर्दछ।`);
+                if (lastArrInput) lastArrInput.focus();
+                return false;
+            }
+
+            // Check every row within [start_date, end_date] and sequential continuity
+            let prevArr = null;
+            for (let i = 0; i < rows.length; i++) {
+                const r = rows[i];
+                const depInp = r.querySelector('input[name="departure_date[]"], input[name*="departure_date"]');
+                const arrInp = r.querySelector('input[name="arrival_date[]"], input[name*="arrival_date"]');
+                const depVal = depInp ? depInp.value.trim() : '';
+                const arrVal = arrInp ? arrInp.value.trim() : '';
+                const rowNo = i + 1;
+
+                if (!depVal) {
+                    e.preventDefault();
+                    alert(`⚠️ पंक्ति नं. ${rowNo} मा प्रस्थान मिति (२) भर्नुहोस्।`);
+                    if (depInp) depInp.focus();
+                    return false;
+                }
+                if (!arrVal) {
+                    e.preventDefault();
+                    alert(`⚠️ पंक्ति नं. ${rowNo} मा आगमन मिति (४) भर्नुहोस्।`);
+                    if (arrInp) arrInp.focus();
+                    return false;
+                }
+
+                if (NepaliCalendar.compareBsDates(depVal, window.currentOrderStartDate) < 0) {
+                    e.preventDefault();
+                    alert(`⚠️ पंक्ति नं. ${rowNo} को प्रस्थान मिति (${depVal}) भ्रमण आदेशको शुरु मिति (${window.currentOrderStartDate}) भन्दा अगाडिको हुन सक्दैन।`);
+                    if (depInp) depInp.focus();
+                    return false;
+                }
+
+                if (NepaliCalendar.compareBsDates(depVal, window.currentOrderEndDate) > 0) {
+                    e.preventDefault();
+                    alert(`⚠️ पंक्ति नं. ${rowNo} को प्रस्थान मिति (${depVal}) भ्रमण आदेशको समाप्त मिति (${window.currentOrderEndDate}) भन्दा पछिको हुन सक्दैन।`);
+                    if (depInp) depInp.focus();
+                    return false;
+                }
+
+                if (NepaliCalendar.compareBsDates(arrVal, window.currentOrderStartDate) < 0) {
+                    e.preventDefault();
+                    alert(`⚠️ पंक्ति नं. ${rowNo} को आगमन मिति (${arrVal}) भ्रमण आदेशको शुरु मिति (${window.currentOrderStartDate}) भन्दा अगाडिको हुन सक्दैन।`);
+                    if (arrInp) arrInp.focus();
+                    return false;
+                }
+
+                if (NepaliCalendar.compareBsDates(arrVal, window.currentOrderEndDate) > 0) {
+                    e.preventDefault();
+                    alert(`⚠️ पंक्ति नं. ${rowNo} को आगमन मिति (${arrVal}) भ्रमण आदेशको समाप्त मिति (${window.currentOrderEndDate}) भन्दा पछिको हुन सक्दैन।`);
+                    if (arrInp) arrInp.focus();
+                    return false;
+                }
+
+                if (NepaliCalendar.compareBsDates(arrVal, depVal) < 0) {
+                    e.preventDefault();
+                    alert(`⚠️ पंक्ति नं. ${rowNo} मा आगमन मिति (${arrVal}) प्रस्थान मिति (${depVal}) भन्दा अगाडिको हुन सक्दैन।`);
+                    if (arrInp) arrInp.focus();
+                    return false;
+                }
+
+                if (prevArr && NepaliCalendar.compareBsDates(depVal, prevArr) < 0) {
+                    e.preventDefault();
+                    alert(`⚠️ पंक्ति नं. ${rowNo} को प्रस्थान मिति (${depVal}) अघिल्लो पंक्तिको आगमन मिति (${prevArr}) भन्दा अगाडिको हुन सक्दैन।`);
+                    if (depInp) depInp.focus();
+                    return false;
+                }
+
+                prevArr = arrVal;
+            }
+        }
+    });
+
+    // Trigger on load
+    document.addEventListener('DOMContentLoaded', () => {
+        handleOrderChange();
+        NepaliCalendar.calculateBillTotals();
+        checkMiscLimit();
+    });
+</script>
+</body>
+</html>

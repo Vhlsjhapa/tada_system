@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>प्रयोगकर्ता व्यवस्थापन - TADA System</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --primary-dark: #0f172a;
+            --sidebar-bg: #0f172a;
+            --sidebar-hover: #1e293b;
+            --sidebar-active: #2563eb;
+            --success: #16a34a;
+            --warning: #f59e0b;
+            --danger: #dc2626;
+            --purple: #7c3aed;
+            --dark: #0f172a;
+            --slate: #64748b;
+            --border: #e2e8f0;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Kalimati', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--dark);
+            line-height: 1.5;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            color: #f1f5f9;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 1px solid #334155;
+            z-index: 100;
+        }
+        .sidebar-brand {
+            padding: 20px 18px 16px;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: #b91c1c;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            box-shadow: 0 2px 6px rgba(185, 28, 28, 0.4);
+        }
+        .brand-text h2 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+        .brand-text p {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .user-profile-box {
+            padding: 14px 18px;
+            background: rgba(30, 41, 59, 0.6);
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: #2563eb;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .user-info {
+            flex: 1;
+            overflow: hidden;
+        }
+        .user-info .name {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #f8fafc;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .user-info .role-badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #059669;
+            color: white;
+            margin-top: 2px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 12px 10px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .menu-header {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            padding: 10px 10px 4px;
+            font-weight: 700;
+        }
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            color: #cbd5e1;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 13.5px;
+            font-weight: 500;
+            transition: all 0.15s ease;
+        }
+        .sidebar-menu li a:hover {
+            background: var(--sidebar-hover);
+            color: #ffffff;
+            transform: translateX(2px);
+        }
+        .sidebar-menu li.active a {
+            background: var(--sidebar-active);
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+        }
+        .menu-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding: 12px;
+            border-top: 1px solid #334155;
+        }
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 8px;
+            background: rgba(220, 38, 38, 0.15);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            color: #fca5a5;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-logout:hover {
+            background: #dc2626;
+            color: white;
+        }
+
+        /* Main Content */
+        .main-wrapper {
+            flex: 1;
+            padding: 24px 30px;
+            overflow-y: auto;
+            max-width: calc(100vw - 260px);
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #3b82f6 100%);
+            color: white;
+            padding: 20px 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
+            margin-bottom: 24px;
+        }
+        .page-title h1 {
+            font-size: 21px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .page-title p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        /* Layout Grid */
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 24px;
+        }
+        @media (max-width: 1024px) {
+            .layout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 20px 22px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 16px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        label {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #334155;
+        }
+        input, select {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13.5px;
+            font-family: inherit;
+            color: #1e293b;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .btn-submit {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+        .btn-submit:hover {
+            background: #1d4ed8;
+        }
+        .btn-reset {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12.5px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 6px;
+            text-align: center;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 18px;
+        }
+        .alert-success { background: #dcfce7; border-left: 4px solid var(--success); color: #15803d; }
+        .alert-error { background: #fee2e2; border-left: 4px solid var(--danger); color: #991b1b; }
+
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-admin { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .badge-user { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+        .badge-active { background: #dcfce7; color: #166534; }
+        .badge-inactive { background: #fee2e2; color: #991b1b; }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11.5px;
+            text-decoration: none;
+            font-weight: 600;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+        .btn-edit { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+        .btn-edit:hover { background: #dbeafe; }
+        .btn-pwd { background: #fdf4ff; color: #86198f; border-color: #f5d0fe; }
+        .btn-pwd:hover { background: #f5d0fe; }
+        .btn-toggle { background: #fef3c7; color: #b45309; border-color: #fde68a; }
+        .btn-toggle:hover { background: #fde68a; }
+        .btn-del { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+        .btn-del:hover { background: #fecaca; }
+
+        .search-box {
+            margin-bottom: 14px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        /* Modal for Password Reset */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            padding: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            animation: modalFadeIn 0.2s ease-out;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-header {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 14px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        @media print {
+            .sidebar { display: none !important; }
+            .main-wrapper { max-width: 100% !important; padding: 0 !important; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Left Sidebar Navigation -->
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-icon">🇳🇵</div>
+        <div class="brand-text">
+            <h2>TADA व्यवस्थापन</h2>
+            <p>नेपाल सरकार</p>
+        </div>
+    </div>
+
+    <div class="user-profile-box">
+        <div class="user-avatar">
+            {{ request.user.username|slice:":1"|upper }}
+        </div>
+        <div class="user-info">
+            <div class="name">{{ request.user.get_full_name|default:request.user.username }}</div>
+            <div class="role-badge">⭐ व्यवस्थापक (Admin)</div>
+        </div>
+    </div>
+
+    <ul class="sidebar-menu">
+        <li class="menu-header">मुख्य मेनु</li>
+        <li>
+            <a href="/">
+                <span class="menu-icon">🏠</span>
+                <span>ड्यासबोर्ड</span>
+            </a>
+        </li>
+        <li>
+            <a href="/order/new/">
+                <span class="menu-icon">📝</span>
+                <span>नयाँ भ्रमण आदेश</span>
+            </a>
+        </li>
+        <li>
+            <a href="/bill/new/">
+                <span class="menu-icon">💰</span>
+                <span>नयाँ भ्रमण बिल</span>
+            </a>
+        </li>
+        <li>
+            <a href="/report/new/">
+                <span class="menu-icon">📑</span>
+                <span>नयाँ प्रतिवेदन</span>
+            </a>
+        </li>
+
+        <li class="menu-header">प्रशासनिक व्यवस्थापन (Admin)</li>
+        <li>
+            <a href="/register/">
+                <span class="menu-icon">📚</span>
+                <span>भ्रमण अभिलेख खाता</span>
+            </a>
+        </li>
+        <li>
+            <a href="/employees/">
+                <span class="menu-icon">👥</span>
+                <span>कर्मचारी व्यवस्थापन</span>
+            </a>
+        </li>
+        <li>
+            <a href="/offices/">
+                <span class="menu-icon">🏢</span>
+                <span>कार्यालय व्यवस्थापन</span>
+            </a>
+        </li>
+        <li class="active">
+            <a href="/users/">
+                <span class="menu-icon">👤</span>
+                <span>प्रयोगकर्ता व्यवस्थापन</span>
+            </a>
+        </li>
+        <li>
+            <a href="/admin/" target="_blank">
+                <span class="menu-icon">⚙️</span>
+                <span>प्रणाली सेटिङ</span>
+            </a>
+        </li>
+    </ul>
+
+    <div class="sidebar-footer">
+        <a href="/logout/" class="btn-logout">
+            <span>🚪 लगआउट</span>
+        </a>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-wrapper">
+    <div class="page-header">
+        <div class="page-title">
+            <h1>प्रयोगकर्ता व्यवस्थापन (User Accounts & Roles)</h1>
+            <p>नयाँ प्रयोगकर्ता दर्ता, भूमिका (Admin/User) तोक्ने तथा पासवर्ड व्यवस्थापन गर्नुहोस्</p>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if error_message %}
+        <div class="alert alert-error">
+            ⚠️ {{ error_message }}
+        </div>
+    {% endif %}
+
+    <div class="layout-grid">
+        <!-- Form Section -->
+        <div class="card">
+            <div class="card-title">
+                <span id="formHeader">➕ नयाँ प्रयोगकर्ता खाता</span>
+                <span id="editBadge" style="display:none; font-size:11px; background:#fef3c7; color:#b45309; padding:2px 6px; border-radius:4px;">सम्पादन मोड</span>
+            </div>
+
+            <form method="POST" action="/users/" id="userForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="save">
+                <input type="hidden" name="user_id" id="userId" value="">
+
+                <div class="form-group">
+                    <label for="username">प्रयोगकर्ताको नाम (Username) *</label>
+                    <input type="text" id="username" name="username" placeholder="उदा: ram_sharma" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="firstName">पहिलो नाम (First Name)</label>
+                    <input type="text" id="firstName" name="first_name" placeholder="उदा: राम">
+                </div>
+
+                <div class="form-group">
+                    <label for="lastName">थर (Last Name)</label>
+                    <input type="text" id="lastName" name="last_name" placeholder="उदा: शर्मा">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">इमेल ठेगाना</label>
+                    <input type="email" id="email" name="email" placeholder="उदा: ram@example.gov.np">
+                </div>
+
+                <div class="form-group" id="pwdGroup">
+                    <label for="password">पासवर्ड (Password) <span id="pwdRequired">*</span></label>
+                    <input type="password" id="password" name="password" placeholder="••••••••">
+                    <small id="pwdHint" style="display:none; font-size:11px; color:#64748b;">(पासवर्ड फेर्न नपरेमा खाली छोड्नुहोस्)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="role">भूमिका (Role / Permissions) *</label>
+                    <select id="role" name="role" required>
+                        <option value="user">👤 कर्मचारी (Regular User) - आफ्नो विवरण मात्र</option>
+                        <option value="finance">💼 आर्थिक प्रशासन (Finance) - अभिलेख खाता पहुँच</option>
+                        <option value="admin">⭐ व्यवस्थापक (Admin) - पूर्ण अधिकार</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="employee_id">सम्बन्धित कर्मचारी प्रोफाइल (Link Employee)</label>
+                    <select id="empLink" name="employee_id">
+                        <option value="">-- कुनै कर्मचारी नजोड्ने --</option>
+                        {% for emp in employees %}
+                            <option value="{{ emp.id }}">{{ emp.name }} ({{ emp.code_no }} - {{ emp.designation }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group" style="flex-direction:row; align-items:center; gap:8px; margin-top:6px;">
+                    <input type="checkbox" id="userActive" name="is_active" value="true" checked style="width:auto;">
+                    <label for="userActive" style="margin-bottom:0; cursor:pointer;">खाता सक्रिय (Active) रहनेछ</label>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn">खाता सुरक्षित गर्नुहोस्</button>
+                <a href="/users/" class="btn-reset" id="cancelEditBtn" style="display:none;">रद्द गरी नयाँ भर्नुहोस्</a>
+            </form>
+        </div>
+
+        <!-- Table Section -->
+        <div class="card">
+            <div class="card-title">
+                <span>📋 प्रणाली प्रयोगकर्ताहरू ({{ users_list|length }})</span>
+            </div>
+
+            <div class="search-box">
+                <input type="text" id="searchTable" placeholder="🔍 युजरनेम, नाम वा भूमिका खोजी गर्नुहोस्..." onkeyup="filterUsers()">
+            </div>
+
+            <div class="table-responsive">
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>युजरनेम</th>
+                            <th>पूरा नाम</th>
+                            <th>भूमिका</th>
+                            <th>सम्बन्धित कर्मचारी</th>
+                            <th>स्थिति</th>
+                            <th style="text-align:center;">कार्य</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users_list %}
+                        <tr>
+                            <td><b>{{ u.username }}</b></td>
+                            <td>{{ u.get_full_name|default:"-" }}</td>
+                            <td>
+                                {% if u.is_superuser or u.is_staff %}
+                                    <span class="badge badge-admin">⭐ Admin</span>
+                                {% elif "Finance" in u.groups.all|join:"," or "आर्थिक प्रशासन" in u.groups.all|join:"," or "लेखा" in u.groups.all|join:"," %}
+                                    <span class="badge" style="background:#ede9fe; color:#6d28d9; border:1px solid #c4b5fd;">💼 Finance</span>
+                                {% else %}
+                                    <span class="badge badge-user">👤 User</span>
+                                {% endif %}
+                            </td>
+                            <td style="font-size:12px;">
+                                {% if u.employee_profile %}
+                                    <b>{{ u.employee_profile.name }}</b> ({{ u.employee_profile.code_no }})
+                                {% else %}
+                                    <span style="color:#94a3b8;">नजोडिएको</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if u.is_active %}
+                                    <span class="badge badge-active">सक्रिय</span>
+                                {% else %}
+                                    <span class="badge badge-inactive">निष्क्रिय</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align:center; white-space:nowrap;">
+                                <button type="button" class="btn-action btn-edit" onclick="editUser({{ u.id }}, '{{ u.username|escapejs }}', '{{ u.first_name|escapejs }}', '{{ u.last_name|escapejs }}', '{{ u.email|escapejs }}', '{% if u.is_staff or u.is_superuser %}admin{% elif "Finance" in u.groups.all|join:"," or "आर्थिक प्रशासन" in u.groups.all|join:"," or "लेखा" in u.groups.all|join:"," %}finance{% else %}user{% endif %}', '{{ u.employee_profile.id|default:"" }}', {{ u.is_active|yesno:'true,false' }})">
+                                    ✏️ सम्पादन
+                                </button>
+
+                                <button type="button" class="btn-action btn-pwd" onclick="openResetModal({{ u.id }}, '{{ u.username|escapejs }}')">
+                                    🔑 पासवर्ड
+                                </button>
+                                
+                                {% if u != request.user %}
+                                <form method="POST" action="/users/" style="display:inline;" onsubmit="return confirm('के तपाईं यो खाताको स्थिति परिवर्तन गर्न चाहनुहुन्छ?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="toggle_status">
+                                    <input type="hidden" name="user_id" value="{{ u.id }}">
+                                    <button type="submit" class="btn-action btn-toggle" title="स्थिति फेर्नुहोस्">
+                                        🔄
+                                    </button>
+                                </form>
+
+                                <form method="POST" action="/users/" style="display:inline;" onsubmit="return confirm('के तपाईं साँच्चै यो युजर खाता हटाउन चाहनुहुन्छ?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="user_id" value="{{ u.id }}">
+                                    <button type="submit" class="btn-action btn-del" title="हटाउनुहोस्">
+                                        🗑️
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Password Reset Modal -->
+<div class="modal" id="resetModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            🔑 पासवर्ड रिसेट: <span id="resetModalUsername" style="color:#2563eb;"></span>
+        </div>
+        <form method="POST" action="/users/">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="reset_password">
+            <input type="hidden" name="user_id" id="resetUserId" value="">
+
+            <div class="form-group">
+                <label for="new_password">नयाँ पासवर्ड (New Password) *</label>
+                <input type="password" name="new_password" id="new_password" placeholder="कम्तीमा ४ अक्षर" required minlength="4">
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="btn-submit" style="margin-top:0;">पासवर्ड फेर्नुहोस्</button>
+                <button type="button" class="btn-reset" style="margin-top:0; width:auto;" onclick="closeResetModal()">रद्द गर्नुहोस्</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function editUser(id, username, firstName, lastName, email, role, empId, isActive) {
+        document.getElementById('userId').value = id;
+        document.getElementById('username').value = username;
+        document.getElementById('firstName').value = firstName;
+        document.getElementById('lastName').value = lastName;
+        document.getElementById('email').value = email;
+        document.getElementById('role').value = role;
+        document.getElementById('empLink').value = empId;
+        document.getElementById('userActive').checked = isActive;
+
+        document.getElementById('pwdRequired').innerText = '';
+        document.getElementById('pwdHint').style.display = 'block';
+        document.getElementById('password').required = false;
+
+        document.getElementById('formHeader').innerText = '✏️ प्रयोगकर्ता विवरण सम्पादन';
+        document.getElementById('editBadge').style.display = 'inline-block';
+        document.getElementById('submitBtn').innerText = 'अद्यावधिक (Update) गर्नुहोस्';
+        document.getElementById('cancelEditBtn').style.display = 'inline-block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openResetModal(userId, username) {
+        document.getElementById('resetUserId').value = userId;
+        document.getElementById('resetModalUsername').innerText = username;
+        document.getElementById('new_password').value = '';
+        document.getElementById('resetModal').style.display = 'flex';
+    }
+
+    function closeResetModal() {
+        document.getElementById('resetModal').style.display = 'none';
+    }
+
+    function filterUsers() {
+        const input = document.getElementById('searchTable').value.toLowerCase();
+        const rows = document.querySelectorAll('#usersTable tbody tr');
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(input) ? '' : 'none';
+        });
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('resetModal');
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>
+
+</body>
+</html>

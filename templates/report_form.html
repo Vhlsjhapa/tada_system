@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>नयाँ भ्रमण सम्पन्न प्रतिवेदन</title>
+    <link rel="stylesheet" href="/static/css/nepali_calendar.css">
+    <style>
+        :root {
+            --primary: #7c3aed;
+            --primary-dark: #6d28d9;
+            --border: #cbd5e1;
+            --bg: #f8fafc;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Kalimati', 'Noto Sans Devanagari', Arial, sans-serif;
+            background-color: var(--bg);
+            color: #0f172a;
+            padding: 24px;
+        }
+        .form-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 30px 36px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+        }
+        .form-header {
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 14px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .form-header h2 {
+            font-size: 19px;
+            color: var(--primary-dark);
+        }
+        .section-title {
+            font-size: 14.5px;
+            font-weight: 700;
+            margin: 18px 0 10px 0;
+            color: #6d28d9;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 4px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+        }
+        input, select, textarea {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+        }
+        .btn-submit {
+            background: #7c3aed;
+            color: white;
+            padding: 10px 28px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+        .btn-submit:hover {
+            background: #6d28d9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <div class="form-header">
+        <div>
+            <h2>📝 नयाँ भ्रमण सम्पन्न प्रतिवेदन (Travel Completion Report)</h2>
+            <p style="font-size:12px; color:#64748b; margin-top:2px;">भ्रमण आदेश छान्नुहोस् र सम्पादित कार्य, उपलब्धि तथा सुझावहरू भर्नुहोस्</p>
+        </div>
+        <a href="/" style="color:#64748b; text-decoration:none; font-weight:600;">⬅️ फर्कनुहोस्</a>
+    </div>
+
+    {% if error_message %}
+    <div style="background:#fef2f2; border:1.5px solid #ef4444; color:#991b1b; padding:12px 18px; border-radius:8px; margin-bottom:18px; font-size:13.5px; line-height:1.5;">
+        <b>⚠️ त्रुटि (Validation Error):</b> {{ error_message }}
+    </div>
+    {% endif %}
+
+    {% if not orders %}
+    <div style="background:#f5f3ff; border:1.5px solid #8b5cf6; color:#5b21b6; padding:14px 18px; border-radius:8px; margin-bottom:18px; font-size:13.5px; line-height:1.6;">
+        ℹ️ <b>जानकारी:</b> हाल प्रतिवेदन बनाउन बाँकी कुनै पनि नयाँ भ्रमण आदेश उपलब्ध छैन। सबै भ्रमण आदेशहरूको प्रतिवेदन तयार भइसकेको छ।<br>
+        👉 नयाँ प्रतिवेदन बनाउनको लागि पहिले <a href="/order/new/" style="color:#6d28d9; font-weight:bold; text-decoration:underline;">➕ नयाँ राष्ट्रिय भ्रमण आदेश सिर्जना गर्नुहोस्</a> अथवा विद्यमान प्रतिवेदनहरू <a href="/" style="color:#6d28d9; font-weight:bold; text-decoration:underline;">ड्यासबोर्ड</a>बाट हेर्नुहोस्।
+    </div>
+    {% endif %}
+
+    <form method="POST" action="/report/new/">
+        {% csrf_token %}
+
+        <!-- १. सम्बन्धित भ्रमण आदेश -->
+        <div class="section-title">१. सम्बन्धित राष्ट्रिय भ्रमण आदेश</div>
+        
+        <div class="form-grid">
+            <div class="form-group" style="grid-column: span 2;">
+                <label>भ्रमण आदेश (Travel Order) *</label>
+                <select name="travel_order" id="id_travel_order" required {% if not orders %}disabled{% endif %}>
+                    <option value="">-- {% if orders %}भ्रमण आदेश छान्नुहोस्{% else %}कुनै पनि बाँकी भ्रमण आदेश छैन{% endif %} --</option>
+                    {% for ord in orders %}
+                    <option value="{{ ord.id }}" {% if preselected_order_id == ord.id|stringformat:"s" %}selected{% elif forloop.first and not preselected_order_id %}selected{% endif %}>
+                        आदेश नं: {{ ord.order_number }} | {{ ord.person }} ({{ ord.destination }} - {{ ord.start_date }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>प्रतिवेदन पेश मिति (नेपाली पात्रो) *</label>
+                <input type="text" name="report_date" class="nepali-date-picker" value="२०८२/०४/२५" required {% if not orders %}disabled{% endif %}>
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label>प्रतिवेदन दर्ता नं. (Report Reg No.)</label>
+                <input type="text" name="report_reg_no" id="id_report_reg_no" placeholder="जस्तै: १०४ (आदेशबाट स्वतः लिंक हुने)" {% if not orders %}disabled{% endif %}>
+            </div>
+            <div class="form-group">
+                <label>प्रतिवेदन पेश गर्ने कर्मचारीको नामथर</label>
+                <input type="text" name="submitted_by" id="id_submitted_by" placeholder="कर्मचारीको नाम" {% if not orders %}disabled{% endif %}>
+            </div>
+            <div class="form-group">
+                <label>पद</label>
+                <input type="text" name="submitted_designation" id="id_submitted_designation" placeholder="पद" {% if not orders %}disabled{% endif %}>
+            </div>
+        </div>
+
+        <!-- २. प्रतिवेदनको मुख्य विषयहरू -->
+        <div class="section-title">२. प्रतिवेदनको मुख्य विषयहरू</div>
+
+        <div class="form-group">
+            <label>१. सम्पादित मुख्य कार्यहरूको संक्षिप्त विवरण (Key Activities) *</label>
+            <textarea name="key_activities" rows="3" required placeholder="भ्रमणका क्रममा सम्पादन गरिएका मुख्य-मुख्य कार्यहरू बुँदागत रूपमा लेख्नुहोस्..." {% if not orders %}disabled{% endif %}></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>२. हासिल भएका मुख्य उपलब्धिहरू (Key Achievements) *</label>
+            <textarea name="achievements" rows="3" required placeholder="भ्रमणबाट प्राप्त उपलब्धि, सेवा प्रवाह वा अनुगमन नतिजा..." {% if not orders %}disabled{% endif %}></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>३. स्थलगत देखिएका समस्या तथा चुनौतीहरू (Challenges)</label>
+            <textarea name="challenges" rows="2" placeholder="स्थलगत अनुगमन वा काम गर्दा देखिएका समस्याहरू (यदि भएमा)..." {% if not orders %}disabled{% endif %}></textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+            <label>४. निष्कर्ष तथा आगामी कार्यका लागि सुझावहरू (Recommendations) *</label>
+            <textarea name="recommendations" rows="3" required placeholder="कार्यालय तथा शाखालाई आवश्यक सिफारिस तथा सुझावहरू..." {% if not orders %}disabled{% endif %}></textarea>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:12px; align-items:center;">
+            <a href="/" style="color:#64748b; text-decoration:none; font-weight:600;">रद्द गर्नुहोस्</a>
+            <button type="submit" class="btn-submit" {% if not orders %}disabled style="opacity:0.5; cursor:not-allowed;"{% endif %}>💾 सुरक्षित गरी प्रतिवेदन प्रिन्ट हेर्नुहोस्</button>
+        </div>
+
+    </form>
+</div>
+
+<script src="/static/js/nepali_calendar.js"></script>
+<script>
+    function handleReportOrderChange() {
+        const select = document.getElementById('id_travel_order');
+        if (!select || !select.value) return;
+
+        const orderId = select.value;
+        fetch(`/api/order/${orderId}/`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const subByName = document.getElementById('id_submitted_by');
+                    const subByDesig = document.getElementById('id_submitted_designation');
+                    const repRegNo = document.getElementById('id_report_reg_no');
+                    if (subByName && (!subByName.value || subByName.value === '')) {
+                        subByName.value = data.person || '';
+                    }
+                    if (subByDesig && (!subByDesig.value || subByDesig.value === '')) {
+                        subByDesig.value = data.designation || '';
+                    }
+                    if (repRegNo && data.report_reg_no && (!repRegNo.value || repRegNo.value === '')) {
+                        repRegNo.value = data.report_reg_no;
+                    }
+                }
+            })
+            .catch(err => console.error('Error fetching order details:', err));
+    }
+
+    document.getElementById('id_travel_order')?.addEventListener('change', handleReportOrderChange);
+    document.addEventListener('DOMContentLoaded', () => {
+        handleReportOrderChange();
+    });
+</script>
+</body>
+</html>

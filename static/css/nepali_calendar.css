@@ -1,0 +1,263 @@
+/* Nepali Panchanga Calendar & TADA System Styling - Compact & Modern */
+:root {
+    --nep-primary: #1e3a8a;
+    --nep-primary-hover: #1d4ed8;
+    --nep-secondary: #0284c7;
+    --nep-bg-today: #eff6ff;
+    --nep-border: #cbd5e1;
+    --nep-text: #1e293b;
+    --nep-sat: #dc2626;
+}
+
+/* Datepicker Popup Container - Fixed position, compact width, no jitter */
+.nepali-calendar-popup, .nepali-datepicker, .ndp-container, #ndp-nepali-box {
+    position: fixed !important;
+    z-index: 9999999 !important;
+    background: #ffffff;
+    border: 1px solid #94a3b8;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.25), 0 4px 6px -2px rgba(0, 0, 0, 0.1) !important;
+    width: 265px;
+    font-family: 'Kalimati', 'Noto Sans Devanagari', 'Mukti', sans-serif;
+    user-select: none;
+    display: none;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Top Banner with Today / Selected Date Info */
+.nepali-cal-top-banner {
+    background: #0f172a;
+    color: #f8fafc;
+    padding: 5px 10px;
+    font-size: 11.5px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #334155;
+}
+
+.nep-day-badge {
+    background: #2563eb;
+    color: #ffffff;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10.5px;
+    font-weight: bold;
+}
+
+/* Header */
+.nepali-cal-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+    color: #ffffff;
+    padding: 6px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+}
+
+.nepali-cal-header select {
+    background: #ffffff;
+    color: #0f172a;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: 12px;
+    font-weight: 600;
+    height: 26px;
+    cursor: pointer;
+    font-family: inherit;
+    outline: none;
+}
+
+.nepali-cal-nav-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    padding: 0;
+}
+
+.nepali-cal-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* Weekdays Header */
+.nepali-cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: center;
+    padding: 4px 0;
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+}
+
+.nepali-cal-weekdays span:first-child,
+.nepali-cal-weekdays span.saturday-col,
+.nepali-cal-weekdays span:last-child {
+    color: var(--nep-sat);
+}
+
+/* Days Grid */
+.nepali-cal-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    padding: 4px 6px;
+    gap: 2px;
+    text-align: center;
+    background: #ffffff;
+}
+
+.nepali-cal-day {
+    height: 27px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.nepali-cal-day:hover:not(.empty):not(.disabled) {
+    background: #dbeafe;
+    color: #1e3a8a;
+    font-weight: 700;
+}
+
+.nepali-cal-day.today {
+    border: 1.5px solid #2563eb;
+    font-weight: 700;
+    color: #1d4ed8;
+    background: #eff6ff;
+}
+
+.nepali-cal-day.selected {
+    background: #1e3a8a !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    border-radius: 4px;
+}
+
+.nepali-cal-day.saturday {
+    color: var(--nep-sat);
+    font-weight: 600;
+}
+
+.nepali-cal-day.disabled {
+    color: #cbd5e1 !important;
+    background: #f8fafc !important;
+    cursor: not-allowed !important;
+    text-decoration: line-through;
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+.nepali-cal-day.in-travel-range:not(.selected):not(.disabled) {
+    background: #f0fdf4;
+    color: #166534;
+    font-weight: 600;
+    border: 1px dashed #86efac;
+}
+
+.nepali-cal-range-hint {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 3px 6px;
+    font-size: 11px;
+    border-bottom: 1px solid #fde68a;
+    text-align: center;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+/* Footer */
+.nepali-cal-footer {
+    padding: 4px 8px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+}
+
+.nepali-cal-today-btn {
+    background: #e2e8f0;
+    color: #1e293b;
+    border: 1px solid #cbd5e1;
+    padding: 2px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: inherit;
+    font-size: 11px;
+}
+
+.nepali-cal-today-btn:hover {
+    background: #cbd5e1;
+}
+
+.nepali-cal-clear-btn {
+    background: transparent;
+    color: #ef4444;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: inherit;
+    font-size: 11px;
+    padding: 2px 4px;
+}
+
+.nepali-cal-clear-btn:hover {
+    text-decoration: underline;
+}
+
+/* Day Helper label under date input */
+.nepali-day-helper {
+    font-size: 11px;
+    color: #1e40af;
+    font-weight: 600;
+    margin-top: 2px;
+    line-height: 1.2;
+}
+
+/* Input Trigger Icon Helper */
+.nepali-date-input-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.nepali-date-input-wrapper input {
+    width: 100%;
+    padding-right: 28px;
+}
+
+.nepali-cal-icon {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #64748b;
+    font-size: 14px;
+    pointer-events: none;
+}

@@ -1,0 +1,315 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>लगइन - भ्रमण तथा दैनिक भत्ता व्यवस्थापन प्रणाली</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-dark: #0f172a;
+            --primary-light: #3b82f6;
+            --accent: #b91c1c;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #cbd5e1;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Kalimati', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #1e40af 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--text-main);
+        }
+        .login-card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 460px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .login-header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%);
+            color: white;
+            padding: 30px 24px 22px;
+            text-align: center;
+            position: relative;
+        }
+        .emblem-wrap {
+            width: 75px;
+            height: 75px;
+            margin: 0 auto 14px;
+            background: white;
+            border-radius: 12px;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .emblem-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .login-header .gov-title {
+            font-size: 13px;
+            letter-spacing: 0.4px;
+            opacity: 0.9;
+            margin-bottom: 3px;
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+        .login-header .office-name {
+            font-size: 17.5px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            color: #ffffff;
+            line-height: 1.35;
+        }
+        .login-header .system-title {
+            font-size: 13.5px;
+            color: #93c5fd;
+            font-weight: 600;
+            margin-top: 4px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        .login-body {
+            padding: 28px 28px;
+        }
+        .welcome-text {
+            text-align: center;
+            margin-bottom: 22px;
+        }
+        .welcome-text h2 {
+            font-size: 19px;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 4px;
+        }
+        .welcome-text p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            color: #991b1b;
+            padding: 12px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            line-height: 1.4;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+        .input-wrap {
+            position: relative;
+        }
+        .input-wrap input {
+            width: 100%;
+            padding: 11px 14px 11px 40px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text-main);
+            transition: all 0.2s ease;
+            background-color: #f8fafc;
+        }
+        .input-wrap input:focus {
+            outline: none;
+            border-color: #2563eb;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 16px;
+        }
+        
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(30, 64, 175, 0.3);
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+            box-shadow: 0 6px 14px rgba(30, 64, 175, 0.4);
+            transform: translateY(-1px);
+        }
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .login-footer {
+            background: #f8fafc;
+            border-top: 1px solid var(--border);
+            padding: 14px 24px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .role-notice {
+            margin-top: 14px;
+            padding: 10px 12px;
+            background: #eff6ff;
+            border-radius: 6px;
+            border: 1px dashed #93c5fd;
+            font-size: 11.5px;
+            color: #1e40af;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="login-header">
+        <div class="emblem-wrap">
+            <img src="{% static 'images/nepal_logo.svg' %}" alt="नेपाल सरकार निशान छाप">
+        </div>
+        <div class="gov-title">
+            {% if default_office %}{{ default_office.parent_body_1|default:"कोशी प्रदेश सरकार" }}{% else %}नेपाल सरकार / प्रदेश सरकार{% endif %}
+            {% if default_office.parent_body_2 %} | {{ default_office.parent_body_2 }}{% endif %}
+        </div>
+        <div class="office-name">
+            {% if default_office %}{{ default_office.name }}{% else %}सरकारी कार्यालय{% endif %}
+        </div>
+        <div class="system-title">भ्रमण तथा दैनिक भत्ता (TADA) व्यवस्थापन प्रणाली</div>
+    </div>
+
+    <div class="login-body">
+        <div class="welcome-text">
+            <h2>प्रयोगकर्ता लगइन (User Login)</h2>
+            <p>प्रणालीमा प्रवेश गर्न आफ्नो युजरनेम र पासवर्ड प्रविष्ट गर्नुहोस्</p>
+        </div>
+
+        {% if error_message %}
+        <div class="alert-error">
+            <span>⚠️</span>
+            <div>{{ error_message }}</div>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="/login/">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="fiscal_year">सक्रिय आर्थिक वर्ष (Fiscal Year) *</label>
+                <div class="input-wrap">
+                    <span class="input-icon">📅</span>
+                    <select id="fiscal_year" name="fiscal_year" required style="width: 100%; padding: 11px 14px 11px 40px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14.5px; font-weight: 700; color: #1e3a8a; background-color: #f8fafc; font-family: inherit; cursor: pointer;">
+                        {% for fy in fiscal_years %}
+                        <option value="{{ fy }}" {% if fy == default_fy %}selected{% endif %}>आ.व. {{ fy }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <small style="font-size:11px; color:#64748b; margin-top:3px; display:block;">(यहाँ छानेको आ.व. प्रणाली भित्र स्वतः लागू हुनेछ)</small>
+            </div>
+
+            <div class="form-group">
+                <label for="username">प्रयोगकर्ताको नाम (Username)</label>
+                <div class="input-wrap">
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="username" name="username" placeholder="उदा: admin वा ram_sharma" required autofocus>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">पासवर्ड (Password)</label>
+                <div class="input-wrap">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" id="password" name="password" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                <span>लगइन गर्नुहोस्</span>
+                <span>➔</span>
+            </button>
+        </form>
+
+        <div class="role-notice">
+            🔒 <b>सुरक्षा सूचना:</b> व्यवस्थापक (Admin) ले सम्पूर्ण खाता, कार्यालय तथा कर्मचारी व्यवस्थापन गर्न पाउनेछन् भने कर्मचारी (User) ले आफ्नो भ्रमण आदेश, बिल, प्रतिवेदन तथा निवेदन मात्र भर्न पाउनेछन्।
+        </div>
+
+        <div style="margin-top: 14px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <div style="font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+                <span>🔑 पूर्वनिर्धारित लगइन विवरण (Default Logins):</span>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" onclick="quickFill('admin', 'admin')" style="flex: 1; min-width: 140px; padding: 6px 10px; background: #1e3a8a; color: #ffffff; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: left; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                    👑 प्रशासक (Admin)<br>
+                    <small style="opacity: 0.85; font-size: 10.5px;">admin / admin</small>
+                </button>
+                <button type="button" onclick="quickFill('ram_sharma', 'ram123')" style="flex: 1; min-width: 140px; padding: 6px 10px; background: #059669; color: #ffffff; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: left; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                    👤 कर्मचारी (User)<br>
+                    <small style="opacity: 0.85; font-size: 10.5px;">ram_sharma / ram123</small>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="login-footer">
+        © २०८२ भ्रमण तथा दैनिक भत्ता व्यवस्थापन प्रणाली | सर्वाधिकार सुरक्षित
+    </div>
+</div>
+
+<script>
+function quickFill(user, pass) {
+    document.getElementById('username').value = user;
+    document.getElementById('password').value = pass;
+}
+</script>
+
+</body>
+</html>

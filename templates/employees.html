@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>कर्मचारी दर्ता तथा व्यवस्थापन - TADA System</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --primary-dark: #0f172a;
+            --sidebar-bg: #0f172a;
+            --sidebar-hover: #1e293b;
+            --sidebar-active: #2563eb;
+            --success: #16a34a;
+            --warning: #f59e0b;
+            --danger: #dc2626;
+            --dark: #0f172a;
+            --slate: #64748b;
+            --border: #e2e8f0;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Kalimati', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--dark);
+            line-height: 1.5;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            color: #f1f5f9;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 1px solid #334155;
+            z-index: 100;
+        }
+        .sidebar-brand {
+            padding: 20px 18px 16px;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: #b91c1c;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            box-shadow: 0 2px 6px rgba(185, 28, 28, 0.4);
+        }
+        .brand-text h2 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+        .brand-text p {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .user-profile-box {
+            padding: 14px 18px;
+            background: rgba(30, 41, 59, 0.6);
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: #2563eb;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .user-info {
+            flex: 1;
+            overflow: hidden;
+        }
+        .user-info .name {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #f8fafc;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .user-info .role-badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #059669;
+            color: white;
+            margin-top: 2px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 12px 10px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .menu-header {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            padding: 10px 10px 4px;
+            font-weight: 700;
+        }
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            color: #cbd5e1;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 13.5px;
+            font-weight: 500;
+            transition: all 0.15s ease;
+        }
+        .sidebar-menu li a:hover {
+            background: var(--sidebar-hover);
+            color: #ffffff;
+            transform: translateX(2px);
+        }
+        .sidebar-menu li.active a {
+            background: var(--sidebar-active);
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+        }
+        .menu-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding: 12px;
+            border-top: 1px solid #334155;
+        }
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 8px;
+            background: rgba(220, 38, 38, 0.15);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            color: #fca5a5;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-logout:hover {
+            background: #dc2626;
+            color: white;
+        }
+
+        /* Main Content Layout */
+        .main-wrapper {
+            flex: 1;
+            padding: 24px 30px;
+            overflow-y: auto;
+            max-width: calc(100vw - 260px);
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #3b82f6 100%);
+            color: white;
+            padding: 20px 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
+            margin-bottom: 24px;
+        }
+        .page-title h1 {
+            font-size: 21px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .page-title p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        /* Grid */
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 24px;
+        }
+        @media (max-width: 1024px) {
+            .layout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 20px 22px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 16px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        label {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #334155;
+        }
+        input, select {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13.5px;
+            font-family: inherit;
+            color: #1e293b;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .btn-submit {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+        .btn-submit:hover {
+            background: #1d4ed8;
+        }
+        .btn-reset {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12.5px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 6px;
+            text-align: center;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 18px;
+        }
+        .alert-success { background: #dcfce7; border-left: 4px solid var(--success); color: #15803d; }
+        .alert-error { background: #fee2e2; border-left: 4px solid var(--danger); color: #991b1b; }
+
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-active { background: #dcfce7; color: #166534; }
+        .badge-inactive { background: #fee2e2; color: #991b1b; }
+        .badge-user { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+        .badge-nouser { background: #f1f5f9; color: #64748b; }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11.5px;
+            text-decoration: none;
+            font-weight: 600;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+        .btn-edit { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+        .btn-edit:hover { background: #dbeafe; }
+        .btn-toggle { background: #fef3c7; color: #b45309; border-color: #fde68a; }
+        .btn-toggle:hover { background: #fde68a; }
+        .btn-del { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+        .btn-del:hover { background: #fecaca; }
+
+        .search-box {
+            margin-bottom: 14px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        @media print {
+            .sidebar { display: none !important; }
+            .main-wrapper { max-width: 100% !important; padding: 0 !important; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Left Sidebar Navigation -->
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-icon">🇳🇵</div>
+        <div class="brand-text">
+            <h2>TADA व्यवस्थापन</h2>
+            <p>नेपाल सरकार</p>
+        </div>
+    </div>
+
+    <div class="user-profile-box">
+        <div class="user-avatar">
+            {{ request.user.username|slice:":1"|upper }}
+        </div>
+        <div class="user-info">
+            <div class="name">{{ request.user.get_full_name|default:request.user.username }}</div>
+            <div class="role-badge">⭐ व्यवस्थापक (Admin)</div>
+        </div>
+    </div>
+
+    <ul class="sidebar-menu">
+        <li class="menu-header">मुख्य मेनु</li>
+        <li>
+            <a href="/">
+                <span class="menu-icon">🏠</span>
+                <span>ड्यासबोर्ड</span>
+            </a>
+        </li>
+        <li>
+            <a href="/order/new/">
+                <span class="menu-icon">📝</span>
+                <span>नयाँ भ्रमण आदेश</span>
+            </a>
+        </li>
+        <li>
+            <a href="/bill/new/">
+                <span class="menu-icon">💰</span>
+                <span>नयाँ भ्रमण बिल</span>
+            </a>
+        </li>
+        <li>
+            <a href="/report/new/">
+                <span class="menu-icon">📑</span>
+                <span>नयाँ प्रतिवेदन</span>
+            </a>
+        </li>
+
+        <li class="menu-header">प्रशासनिक व्यवस्थापन (Admin)</li>
+        <li>
+            <a href="/register/">
+                <span class="menu-icon">📚</span>
+                <span>भ्रमण अभिलेख खाता</span>
+            </a>
+        </li>
+        <li class="active">
+            <a href="/employees/">
+                <span class="menu-icon">👥</span>
+                <span>कर्मचारी व्यवस्थापन</span>
+            </a>
+        </li>
+        <li>
+            <a href="/offices/">
+                <span class="menu-icon">🏢</span>
+                <span>कार्यालय व्यवस्थापन</span>
+            </a>
+        </li>
+        <li>
+            <a href="/users/">
+                <span class="menu-icon">👤</span>
+                <span>प्रयोगकर्ता व्यवस्थापन</span>
+            </a>
+        </li>
+        <li>
+            <a href="/admin/" target="_blank">
+                <span class="menu-icon">⚙️</span>
+                <span>प्रणाली सेटिङ</span>
+            </a>
+        </li>
+    </ul>
+
+    <div class="sidebar-footer">
+        <a href="/logout/" class="btn-logout">
+            <span>🚪 लगआउट</span>
+        </a>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-wrapper">
+    <div class="page-header">
+        <div class="page-title">
+            <h1>कर्मचारी दर्ता तथा व्यवस्थापन (Employee Management)</h1>
+            <p>नयाँ कर्मचारी दर्ता, विवरण अद्यावधिक तथा युजर एकाउन्ट म्यापिङ गर्नुहोस्</p>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if error_message %}
+        <div class="alert alert-error">
+            ⚠️ {{ error_message }}
+        </div>
+    {% endif %}
+
+    <div class="layout-grid">
+        <!-- Form Section -->
+        <div class="card">
+            <div class="card-title">
+                <span id="formHeader">➕ नयाँ कर्मचारी दर्ता</span>
+                <span id="editBadge" style="display:none; font-size:11px; background:#fef3c7; color:#b45309; padding:2px 6px; border-radius:4px;">सम्पादन मोड</span>
+            </div>
+
+            <form method="POST" action="/employees/" id="empForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="save">
+                <input type="hidden" name="employee_id" id="empId" value="">
+
+                <div class="form-group">
+                    <label for="name">कर्मचारीको नाम *</label>
+                    <input type="text" id="empName" name="name" placeholder="उदा: राम शर्मा" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="code_no">संकेत नं. (Employee Code) *</label>
+                    <input type="text" id="empCode" name="code_no" placeholder="उदा: E101 वा १२३४५" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="designation">पद (Designation) *</label>
+                    <input type="text" id="empDesig" name="designation" placeholder="उदा: कम्प्युटर अपरेटर" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="level">तह / श्रेणी (Level / Rank)</label>
+                    <input type="text" id="empLevel" name="level" placeholder="उदा: सहायक पाँचौ वा अधिकृत सातौं">
+                </div>
+
+                <div class="form-group">
+                    <label for="office_ref">कार्यालय (Office)</label>
+                    <select id="empOffice" name="office_ref">
+                        {% for off in offices %}
+                            <option value="{{ off.id }}" {% if off.is_default %}selected{% endif %}>{{ off.name }} {% if off.is_default %}(मुख्य){% endif %}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="permanent_address">स्थायी ठेगाना</label>
+                    <input type="text" id="empAddress" name="permanent_address" placeholder="उदा: भद्रपुर-५, झापा">
+                </div>
+
+                <div class="form-group">
+                    <label for="mobile_no">मोबाइल नं.</label>
+                    <input type="text" id="empMobile" name="mobile_no" placeholder="उदा: ९८XXXXXXXX">
+                </div>
+
+                <div class="form-group">
+                    <label for="user_id">लिङ्क गरिएको युजर खाता (User Account)</label>
+                    <select id="empUser" name="user_id">
+                        <option value="">-- कुनै युजर नजोड्ने --</option>
+                        {% for u in users %}
+                            <option value="{{ u.id }}">{{ u.username }} ({{ u.get_full_name|default:"No Name" }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group" style="flex-direction:row; align-items:center; gap:8px; margin-top:6px;">
+                    <input type="checkbox" id="empActive" name="is_active" value="true" checked style="width:auto;">
+                    <label for="empActive" style="margin-bottom:0; cursor:pointer;">कर्मचारी सक्रिय (Active) रहनेछन्</label>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn">सुरक्षित गर्नुहोस्</button>
+                <a href="/employees/" class="btn-reset" id="cancelEditBtn" style="display:none;">रद्द गरी नयाँ भर्नुहोस्</a>
+            </form>
+        </div>
+
+        <!-- Table Section -->
+        <div class="card">
+            <div class="card-title">
+                <span>📋 दर्ता भएका कर्मचारीहरू ({{ employees|length }})</span>
+            </div>
+
+            <div class="search-box">
+                <input type="text" id="searchTable" placeholder="🔍 नाम, संकेत नं., पद वा कार्यालय खोजी गर्नुहोस्..." onkeyup="filterEmployees()">
+            </div>
+
+            <div class="table-responsive">
+                <table id="empTable">
+                    <thead>
+                        <tr>
+                            <th>संकेत नं.</th>
+                            <th>नाम र पद</th>
+                            <th>कार्यालय</th>
+                            <th>युजर खाता</th>
+                            <th>स्थिति</th>
+                            <th style="text-align:center;">कार्य</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for emp in employees %}
+                        <tr>
+                            <td><b>{{ emp.code_no }}</b></td>
+                            <td>
+                                <div><b>{{ emp.name }}</b></div>
+                                <div style="font-size:11.5px; color:#64748b;">{{ emp.designation }} {% if emp.level %}({{ emp.level }}){% endif %}</div>
+                            </td>
+                            <td style="font-size:12px;">{{ emp.office_ref.name|default:emp.office|default:"-" }}</td>
+                            <td>
+                                {% if emp.user %}
+                                    <span class="badge badge-user">👤 {{ emp.user.username }}</span>
+                                {% else %}
+                                    <span class="badge badge-nouser">नजोडिएको</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if emp.is_active %}
+                                    <span class="badge badge-active">सक्रिय</span>
+                                {% else %}
+                                    <span class="badge badge-inactive">निष्क्रिय</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align:center; white-space:nowrap;">
+                                <button type="button" class="btn-action btn-edit" onclick="editEmployee({{ emp.id }}, '{{ emp.name|escapejs }}', '{{ emp.code_no|escapejs }}', '{{ emp.designation|escapejs }}', '{{ emp.level|default:""|escapejs }}', '{{ emp.office_ref.id|default:"" }}', '{{ emp.permanent_address|default:""|escapejs }}', '{{ emp.mobile_no|default:""|escapejs }}', '{{ emp.user.id|default:"" }}', {{ emp.is_active|yesno:'true,false' }})">
+                                    ✏️ सम्पादन
+                                </button>
+                                
+                                <form method="POST" action="/employees/" style="display:inline;" onsubmit="return confirm('के तपाईं यो कर्मचारीको स्थिति परिवर्तन गर्न चाहनुहुन्छ?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="toggle_status">
+                                    <input type="hidden" name="employee_id" value="{{ emp.id }}">
+                                    <button type="submit" class="btn-action btn-toggle" title="स्थिति फेर्नुहोस्">
+                                        🔄
+                                    </button>
+                                </form>
+
+                                <form method="POST" action="/employees/" style="display:inline;" onsubmit="return confirm('के तपाईं साँच्चै यो कर्मचारी हटाउन चाहनुहुन्छ? सम्बन्धित डाटा भएमा त्रुटि आउन सक्छ।');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="employee_id" value="{{ emp.id }}">
+                                    <button type="submit" class="btn-action btn-del" title="हटाउनुहोस्">
+                                        🗑️
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" style="text-align:center; padding:30px; color:#94a3b8;">कुनै कर्मचारी दर्ता गरिएको छैन।</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function editEmployee(id, name, code, desig, level, officeId, address, mobile, userId, isActive) {
+        document.getElementById('empId').value = id;
+        document.getElementById('empName').value = name;
+        document.getElementById('empCode').value = code;
+        document.getElementById('empDesig').value = desig;
+        document.getElementById('empLevel').value = level;
+        if (officeId) document.getElementById('empOffice').value = officeId;
+        document.getElementById('empAddress').value = address;
+        document.getElementById('empMobile').value = mobile;
+        document.getElementById('empUser').value = userId;
+        document.getElementById('empActive').checked = isActive;
+
+        document.getElementById('formHeader').innerText = '✏️ कर्मचारी विवरण सम्पादन';
+        document.getElementById('editBadge').style.display = 'inline-block';
+        document.getElementById('submitBtn').innerText = 'अद्यावधिक (Update) गर्नुहोस्';
+        document.getElementById('cancelEditBtn').style.display = 'inline-block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function filterEmployees() {
+        const input = document.getElementById('searchTable').value.toLowerCase();
+        const rows = document.querySelectorAll('#empTable tbody tr');
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(input) ? '' : 'none';
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>कार्यालय व्यवस्थापन (Office Management) - TADA System</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --primary-dark: #0f172a;
+            --sidebar-bg: #0f172a;
+            --sidebar-hover: #1e293b;
+            --sidebar-active: #2563eb;
+            --success: #16a34a;
+            --warning: #f59e0b;
+            --danger: #dc2626;
+            --dark: #0f172a;
+            --slate: #64748b;
+            --border: #e2e8f0;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Kalimati', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--dark);
+            line-height: 1.5;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            color: #f1f5f9;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 1px solid #334155;
+            z-index: 100;
+        }
+        .sidebar-brand {
+            padding: 20px 18px 16px;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: #b91c1c;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            box-shadow: 0 2px 6px rgba(185, 28, 28, 0.4);
+        }
+        .brand-text h2 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+        .brand-text p {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .user-profile-box {
+            padding: 14px 18px;
+            background: rgba(30, 41, 59, 0.6);
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: #2563eb;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .user-info {
+            flex: 1;
+            overflow: hidden;
+        }
+        .user-info .name {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #f8fafc;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .user-info .role-badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #059669;
+            color: white;
+            margin-top: 2px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 12px 10px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .menu-header {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            padding: 10px 10px 4px;
+            font-weight: 700;
+        }
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            color: #cbd5e1;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 13.5px;
+            font-weight: 500;
+            transition: all 0.15s ease;
+        }
+        .sidebar-menu li a:hover {
+            background: var(--sidebar-hover);
+            color: #ffffff;
+            transform: translateX(2px);
+        }
+        .sidebar-menu li.active a {
+            background: var(--sidebar-active);
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+        }
+        .menu-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding: 12px;
+            border-top: 1px solid #334155;
+        }
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 8px;
+            background: rgba(220, 38, 38, 0.15);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            color: #fca5a5;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-logout:hover {
+            background: #dc2626;
+            color: white;
+        }
+
+        /* Main Content Layout */
+        .main-wrapper {
+            flex: 1;
+            padding: 24px 30px;
+            overflow-y: auto;
+            max-width: calc(100vw - 260px);
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #3b82f6 100%);
+            color: white;
+            padding: 20px 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
+            margin-bottom: 24px;
+        }
+        .page-title h1 {
+            font-size: 21px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .page-title p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        /* Layout Grid */
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        @media (max-width: 1024px) {
+            .layout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 24px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+        .card-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 18px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+        }
+        input, select {
+            padding: 9px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .btn-save {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 11px 24px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+        .btn-save:hover {
+            background: #1d4ed8;
+        }
+
+        /* Office List Cards */
+        .office-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 16px;
+            position: relative;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .office-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+        }
+        .office-card.active-office {
+            border: 2px solid var(--success);
+            background: #f0fdf4;
+        }
+        .badge-active {
+            background: var(--success);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .office-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 6px 0 4px 0;
+        }
+        .office-hierarchy {
+            font-size: 12.5px;
+            color: #64748b;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+        .office-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            font-size: 13px;
+            background: #f8fafc;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 12px;
+        }
+        .meta-item b {
+            color: #334155;
+        }
+        .office-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .btn-action-active {
+            background: #0284c7;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .btn-action-active:hover {
+            background: #0369a1;
+        }
+        .btn-edit {
+            background: #f1f5f9;
+            color: #334155;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            cursor: pointer;
+        }
+        .btn-edit:hover {
+            background: #e2e8f0;
+        }
+
+        /* Alert */
+        .alert-success {
+            background: #dcfce7;
+            border: 1px solid #86efac;
+            color: #166534;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        @media print {
+            .sidebar { display: none !important; }
+            .main-wrapper { max-width: 100% !important; padding: 0 !important; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Left Sidebar Navigation -->
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-icon">🇳🇵</div>
+        <div class="brand-text">
+            <h2>TADA व्यवस्थापन</h2>
+            <p>नेपाल सरकार</p>
+        </div>
+    </div>
+
+    <div class="user-profile-box">
+        <div class="user-avatar">
+            {{ request.user.username|slice:":1"|upper }}
+        </div>
+        <div class="user-info">
+            <div class="name">{{ request.user.get_full_name|default:request.user.username }}</div>
+            <div class="role-badge">⭐ व्यवस्थापक (Admin)</div>
+        </div>
+    </div>
+
+    <ul class="sidebar-menu">
+        <li class="menu-header">मुख्य मेनु</li>
+        <li>
+            <a href="/">
+                <span class="menu-icon">🏠</span>
+                <span>ड्यासबोर्ड</span>
+            </a>
+        </li>
+        <li>
+            <a href="/order/new/">
+                <span class="menu-icon">📝</span>
+                <span>नयाँ भ्रमण आदेश</span>
+            </a>
+        </li>
+        <li>
+            <a href="/bill/new/">
+                <span class="menu-icon">💰</span>
+                <span>नयाँ भ्रमण बिल</span>
+            </a>
+        </li>
+        <li>
+            <a href="/report/new/">
+                <span class="menu-icon">📑</span>
+                <span>नयाँ प्रतिवेदन</span>
+            </a>
+        </li>
+
+        <li class="menu-header">प्रशासनिक व्यवस्थापन (Admin)</li>
+        <li>
+            <a href="/register/">
+                <span class="menu-icon">📚</span>
+                <span>भ्रमण अभिलेख खाता</span>
+            </a>
+        </li>
+        <li>
+            <a href="/employees/">
+                <span class="menu-icon">👥</span>
+                <span>कर्मचारी व्यवस्थापन</span>
+            </a>
+        </li>
+        <li class="active">
+            <a href="/offices/">
+                <span class="menu-icon">🏢</span>
+                <span>कार्यालय व्यवस्थापन</span>
+            </a>
+        </li>
+        <li>
+            <a href="/users/">
+                <span class="menu-icon">👤</span>
+                <span>प्रयोगकर्ता व्यवस्थापन</span>
+            </a>
+        </li>
+        <li>
+            <a href="/admin/" target="_blank">
+                <span class="menu-icon">⚙️</span>
+                <span>प्रणाली सेटिङ</span>
+            </a>
+        </li>
+    </ul>
+
+    <div class="sidebar-footer">
+        <a href="/logout/" class="btn-logout">
+            <span>🚪 लगआउट</span>
+        </a>
+    </div>
+</div>
+
+<!-- Main Content Area -->
+<div class="main-wrapper">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="page-title">
+            <h1>🏢 कार्यालय व्यवस्थापन (Office Management)</h1>
+            <p>विभिन्न कार्यालयहरूको लेटरहेड, तहगत निकाय तथा कार्यालय प्रमुखको विवरण व्यवस्थापन गर्नुहोस्</p>
+        </div>
+    </div>
+
+    {% if message %}
+    <div class="alert-success">
+        {{ message }}
+    </div>
+    {% endif %}
+
+    <div class="layout-grid">
+
+        <!-- Left Column: Add / Edit Office Form -->
+        <div class="card">
+            <div class="card-title">
+                <span id="formTitle">➕ नयाँ कार्यालय थप्नुहोस् (Add New Office)</span>
+                <button type="button" class="btn-edit" id="btnReset" onclick="resetForm()" style="display:none;">नयाँ फाराम</button>
+            </div>
+
+            <form method="POST" action="/offices/" id="officeForm">
+                {% csrf_token %}
+                <input type="hidden" name="office_id" id="office_id" value="">
+
+                <div class="form-group">
+                    <label>कार्यालयको पूरा नाम (Office Name) *</label>
+                    <input type="text" name="name" id="id_name" required placeholder="जस्तै: भेटेरिनरी अस्पताल तथा पशु सेवा विज्ञ केन्द्र, भद्रपुर झापा">
+                </div>
+
+                <div class="form-group">
+                    <label>प्रदेश / संघीय सरकार (Level 1 Header) *</label>
+                    <input type="text" name="parent_body_1" id="id_parent_body_1" value="कोशी प्रदेश सरकार" required placeholder="जस्तै: कोशी प्रदेश सरकार / बागमती प्रदेश सरकार / नेपाल सरकार">
+                </div>
+
+                <div class="form-group">
+                    <label>मन्त्रालय (Ministry - Level 2 Header)</label>
+                    <input type="text" name="parent_body_2" id="id_parent_body_2" value="उद्योग, कृषि तथा सहकारी मन्त्रालय" placeholder="जस्तै: उद्योग, कृषि तथा सहकारी मन्त्रालय">
+                </div>
+
+                <div class="form-group">
+                    <label>विभाग / निर्देशनालय (Directorate - Level 3 Header)</label>
+                    <input type="text" name="parent_body_3" id="id_parent_body_3" value="पशुपन्छी तथा मत्स्य विकास निर्देशनालय" placeholder="जस्तै: पशुपन्छी तथा मत्स्य विकास निर्देशनालय / स्वास्थ्य सेवा विभाग">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>कार्यालय कोड नं. (Office Code)</label>
+                        <input type="text" name="office_code" id="id_office_code" value="३१२०२१२०११" placeholder="जस्तै: ३१२०२१२०११">
+                    </div>
+                    <div class="form-group">
+                        <label>स्थान / जिल्ला (Location)</label>
+                        <input type="text" name="location" id="id_location" value="भद्रपुर, झापा" placeholder="जस्तै: भद्रपुर, झापा / पोखरा, कास्की">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>कार्यालय प्रमुखको पद (Head Title) *</label>
+                        <input type="text" name="head_title" id="id_head_title" value="कार्यालय प्रमुख" required placeholder="जस्तै: कार्यालय प्रमुख / प्रमुख प्रशासकीय अधिकृत">
+                    </div>
+                    <div class="form-group">
+                        <label>सम्पर्क फोन नं.</label>
+                        <input type="text" name="phone_no" id="id_phone_no" placeholder="फोन नं.">
+                    </div>
+                </div>
+
+                <div class="form-group" style="flex-direction:row; align-items:center; gap:8px; margin-top:8px;">
+                    <input type="checkbox" name="is_default" id="id_is_default" style="width:18px; height:18px; cursor:pointer;">
+                    <label for="id_is_default" style="cursor:pointer; margin-bottom:0;">यस कार्यालयलाई सक्रिय (Default) कार्यालय बनाउनुहोस्</label>
+                </div>
+
+                <button type="submit" class="btn-save" id="btnSubmit">💾 कार्यालय सुरक्षित गर्नुहोस्</button>
+            </form>
+        </div>
+
+        <!-- Right Column: List of Existing Offices -->
+        <div class="card">
+            <div class="card-title">
+                <span>📋 दर्ता भएका कार्यालयहरूको सूची ({{ offices.count }})</span>
+            </div>
+
+            {% for off in offices %}
+            <div class="office-card {% if off.is_default %}active-office{% endif %}">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        {% if off.is_default %}
+                        <span class="badge-active">★ सक्रिय (Active Default)</span>
+                        {% else %}
+                        <span style="font-size:12px; color:#64748b;">सामान्य कार्यालय</span>
+                        {% endif %}
+                    </div>
+                    <div style="font-size:12px; color:#64748b;">
+                        कोड: <b>{{ off.office_code|default:"-" }}</b>
+                    </div>
+                </div>
+
+                <div class="office-name">{{ off.name }}</div>
+
+                <div class="office-hierarchy">
+                    <b>{{ off.parent_body_1|default:"" }}</b><br>
+                    {% if off.parent_body_2 %}{{ off.parent_body_2 }}<br>{% endif %}
+                    {% if off.parent_body_3 %}{{ off.parent_body_3 }}{% endif %}
+                </div>
+
+                <div class="office-meta">
+                    <div class="meta-item">📍 स्थान: <b>{{ off.location|default:"-" }}</b></div>
+                    <div class="meta-item">👤 प्रमुख: <b>{{ off.head_title|default:"कार्यालय प्रमुख" }}</b></div>
+                    {% if off.phone_no %}<div class="meta-item">📞 फोन: <b>{{ off.phone_no }}</b></div>{% endif %}
+                </div>
+
+                <div class="office-actions">
+                    <button type="button" class="btn-edit" onclick="editOffice({{ off.id }}, '{{ off.name|escapejs }}', '{{ off.parent_body_1|escapejs }}', '{{ off.parent_body_2|escapejs }}', '{{ off.parent_body_3|escapejs }}', '{{ off.office_code|escapejs }}', '{{ off.location|escapejs }}', '{{ off.head_title|escapejs }}', '{{ off.phone_no|escapejs }}', {{ off.is_default|yesno:'true,false' }})">✏️ सच्याउनुहोस् (Edit)</button>
+                    {% if not off.is_default %}
+                    <a href="/offices/set-default/{{ off.id }}/" class="btn-action-active">★ सक्रिय बनाउनुहोस्</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div style="text-align:center; padding:30px; color:#64748b;">
+                हाल कुनै कार्यालय दर्ता भएको छैन ।
+            </div>
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    function editOffice(id, name, p1, p2, p3, code, loc, head, phone, isDef) {
+        document.getElementById('office_id').value = id;
+        document.getElementById('id_name').value = name;
+        document.getElementById('id_parent_body_1').value = p1;
+        document.getElementById('id_parent_body_2').value = p2;
+        document.getElementById('id_parent_body_3').value = p3;
+        document.getElementById('id_office_code').value = code;
+        document.getElementById('id_location').value = loc;
+        document.getElementById('id_head_title').value = head;
+        document.getElementById('id_phone_no').value = phone;
+        document.getElementById('id_is_default').checked = isDef;
+
+        document.getElementById('formTitle').innerText = '✏️ कार्यालय विवरण सच्याउनुहोस् (Edit Office)';
+        document.getElementById('btnSubmit').innerText = '🔄 अद्यावधिक (Update) गर्नुहोस्';
+        document.getElementById('btnReset').style.display = 'inline-block';
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        document.getElementById('officeForm').reset();
+        document.getElementById('office_id').value = '';
+        document.getElementById('formTitle').innerText = '➕ नयाँ कार्यालय थप्नुहोस् (Add New Office)';
+        document.getElementById('btnSubmit').innerText = '💾 कार्यालय सुरक्षित गर्नुहोस्';
+        document.getElementById('btnReset').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
