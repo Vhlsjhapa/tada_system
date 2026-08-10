@@ -7,13 +7,14 @@ from .bs_calendar import (
     calculate_tada_allowance_days, 
     to_nepali_digits, 
     to_english_digits,
-    get_fiscal_year_from_bs_date
+    get_fiscal_year_from_bs_date,
+    get_today_bs
 )
 
 
 def normalize_nepali_fiscal_year(fy_str):
     if not fy_str:
-        return "२०८२/८३"
+        return get_fiscal_year_from_bs_date(get_today_bs()) or "२०८३/८४"
     eng = to_english_digits(str(fy_str).strip())
     eng = eng.replace('-', '/').replace('.', '/')
     parts = eng.split('/')
@@ -227,8 +228,8 @@ class TravelOrder(models.Model):
         verbose_name="स्वीकृत गर्ने"
     )
     order_number = models.CharField(max_length=50, verbose_name="आदेश नं", blank=True)
-    order_date = models.CharField(max_length=50, verbose_name="आदेश मिति", default="२०८२/०४/२०")
-    fiscal_year = models.CharField(max_length=20, verbose_name="आर्थिक वर्ष", default="२०८२/८३")
+    order_date = models.CharField(max_length=50, verbose_name="आदेश मिति", default="२०८३/०४/२५")
+    fiscal_year = models.CharField(max_length=20, verbose_name="आर्थिक वर्ष", default="२०८३/८४")
     employee = models.ForeignKey(
         Employee, 
         on_delete=models.SET_NULL, 
@@ -436,7 +437,7 @@ class TravelOrder(models.Model):
             fy = get_fiscal_year_from_bs_date(self.start_date)
             if fy:
                 return fy
-        return "२०८२/८३"
+        return "२०८३/८४"
 
     def save(self, *args, **kwargs):
         # Auto-derive or align fiscal_year with order_date if fiscal_year is default or empty
@@ -722,7 +723,7 @@ class TravelReport(models.Model):
         verbose_name="भ्रमण आदेश छान्नुहोस्",
         related_name="report"
     )
-    report_date = models.CharField(max_length=50, verbose_name="प्रतिवेदन पेश गरेको मिति", default="२०८२/०४/२५")
+    report_date = models.CharField(max_length=50, verbose_name="प्रतिवेदन पेश गरेको मिति", default="२०८३/०४/२५")
     report_reg_no = models.CharField(max_length=50, verbose_name="प्रतिवेदन दर्ता नं", blank=True, null=True)
     
     key_activities = models.TextField(verbose_name="१. सम्पादित मुख्य कार्यहरू (Key Activities)")

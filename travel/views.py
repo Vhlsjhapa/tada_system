@@ -176,28 +176,32 @@ def user_can_access_order(user, order):
 
 
 def get_all_fiscal_years():
-    """Returns a clean list containing requested fiscal years (२०८२/८३, २०८३/८४, २०८४/८५) plus any existing DB fiscal years if present."""
+    """Returns a clean list containing requested fiscal years (२०८३/८४, २०८४/८५, २०८२/८३) plus any existing DB fiscal years if present."""
+    cur_fy = get_fiscal_year_from_bs_date(get_today_bs()) or '२०८३/८४'
     STANDARD_FISCAL_YEARS = [
-        '२०८२/८३',
+        cur_fy,
         '२०८३/८४',
         '२०८४/८५',
+        '२०८२/८३',
     ]
     db_fys = [fy.strip() for fy in TravelOrder.objects.values_list('fiscal_year', flat=True).distinct() if fy and fy.strip()]
     all_fys_set = set(STANDARD_FISCAL_YEARS + db_fys)
-    ordered_fys = ['२०८२/८३', '२०८३/८४', '२०८४/८५']
+    ordered_fys = [cur_fy]
+    for candidate in ['२०८३/८४', '२०८४/८५', '२०८२/८३']:
+        if candidate not in ordered_fys:
+            ordered_fys.append(candidate)
     for fy in sorted(list(all_fys_set)):
         if fy not in ordered_fys:
             ordered_fys.append(fy)
     return ordered_fys
 
 
-
 def get_active_fiscal_year(request):
-    """Returns active fiscal year from session or default '२०८२/८३'."""
+    """Returns active fiscal year from session or default current FY ('२०८३/८४')."""
     fy = request.session.get('active_fiscal_year') if hasattr(request, 'session') else None
     if fy and len(str(fy).strip()) >= 5:
         return str(fy).strip()
-    return "२०८२/८३"
+    return get_fiscal_year_from_bs_date(get_today_bs()) or "२०८३/८४"
 
 
 @login_required
@@ -816,7 +820,7 @@ def order_nivedan(request, pk):
         'office_name': office.name,
         'head_title': office.head_title,
         'location': office.location or 'झापा',
-        'current_date': order.order_date or '२०८२/०४/२०',
+        'current_date': order.order_date or get_today_bs(),
         'is_admin': is_admin(request.user),
     })
 
@@ -835,7 +839,7 @@ def bill_nivedan(request, pk):
         'office_name': office.name,
         'head_title': office.head_title,
         'location': office.location or 'झापा',
-        'current_date': bill.bill_date or (bill.travel_order.end_date if bill.travel_order else '२०८२/०४/२५'),
+        'current_date': bill.bill_date or (bill.travel_order.end_date if bill.travel_order else get_today_bs()),
         'is_admin': is_admin(request.user),
     })
 
@@ -1104,7 +1108,7 @@ def api_next_order_number(request):
     if not fy and order_date:
         fy = get_fiscal_year_from_bs_date(order_date)
     if not fy:
-        fy = '२०८२/८३'
+        fy = get_fiscal_year_from_bs_date(get_today_bs()) or '२०८३/८४'
         
     office_obj = None
     if office_id:
@@ -1257,7 +1261,7 @@ def edit_order_view(request, pk):
     offices = Office.objects.all().order_by('-is_default', 'name')
     default_office = order.office_ref or Office.get_default_office()
     fiscal_years = get_all_fiscal_years()
-    default_fy = order.fiscal_year or '२०८२/८३'
+    default_fy = order.fiscal_year or get_fiscal_year_from_bs_date(get_today_bs()) or '२०८३/८४'
 
     if request.method == 'POST':
         order_date = request.POST.get('order_date')

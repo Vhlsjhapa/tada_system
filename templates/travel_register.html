@@ -371,7 +371,7 @@
         <div class="sub-header-info">
             <div>कार्यालय: <b>{{ default_office.name }}</b></div>
             <div>कुल दर्ता भ्रमण आदेश: <b>{{ total_records_nepali }}</b> वटा</div>
-            <div>प्रिन्ट मिति: <span id="currentPrintDate">२०८२/०४/२०</span></div>
+            <div>प्रिन्ट मिति: <span id="currentPrintDate">{{ today_bs|default:'२०८३/०४/२५' }}</span></div>
         </div>
 
         <!-- Register Ledger Table -->
