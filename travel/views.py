@@ -196,6 +196,21 @@ def get_all_fiscal_years():
     return ordered_fys
 
 
+
+def get_default_date_for_fy(request, today_bs=None):
+    if not today_bs:
+        today_bs = get_today_bs()
+    session_fy = get_active_fiscal_year(request)
+    default_fy = session_fy or get_fiscal_year_from_bs_date(today_bs) or "२०८३/८४"
+    
+    if default_fy == get_fiscal_year_from_bs_date(today_bs):
+        default_date = today_bs
+    else:
+        start_year_str = default_fy.split('/')[0]
+        default_date = f"{start_year_str}/०४/०१"
+    return default_fy, default_date
+
+
 def get_active_fiscal_year(request):
     """Returns active fiscal year from session or default current FY ('२०८३/८४')."""
     fy = request.session.get('active_fiscal_year') if hasattr(request, 'session') else None
@@ -1150,7 +1165,7 @@ def order_form_view(request):
 
     fiscal_years = get_all_fiscal_years()
     today_bs = get_today_bs()
-    default_fy = get_fiscal_year_from_bs_date(today_bs) or "२०८३/८४"
+    default_fy, default_date = get_default_date_for_fy(request, today_bs)
 
     if request.method == 'POST':
         order_date = request.POST.get('order_date')
@@ -1173,6 +1188,7 @@ def order_form_view(request):
                 'fiscal_years': fiscal_years,
                 'today_bs': today_bs,
                 'default_fy': request.POST.get('fiscal_year') or default_fy,
+        'default_date': default_date,
             })
 
         employee_id = request.POST.get('employee')
@@ -1239,6 +1255,7 @@ def order_form_view(request):
         'fiscal_years': fiscal_years,
         'today_bs': today_bs,
         'default_fy': default_fy,
+        'default_date': default_date,
     })
 
 
@@ -1359,6 +1376,7 @@ def bill_form_view(request):
     orders = accessible_orders.filter(bill__isnull=True).order_by('-id')
     preselected_order_id = request.GET.get('order_id', '')
 
+    default_fy, default_date = get_default_date_for_fy(request)
     if preselected_order_id:
         existing_bill = TravelBill.objects.filter(travel_order_id=preselected_order_id).first()
         if existing_bill:
@@ -1425,6 +1443,7 @@ def bill_form_view(request):
                 'preselected_order_id': order_id,
                 'is_admin': admin_mode,
                 'today_bs': get_today_bs(),
+        'default_date': default_date,
             })
 
         # 3. Validate Travel Bill Item Dates against Order bounds
@@ -1463,6 +1482,7 @@ def bill_form_view(request):
                 'preselected_order_id': order_id,
                 'is_admin': admin_mode,
                 'today_bs': get_today_bs(),
+        'default_date': default_date,
             })
 
         address = request.POST.get('address', '').strip()
@@ -1574,6 +1594,7 @@ def bill_form_view(request):
         'preselected_order_id': preselected_order_id,
         'is_admin': admin_mode,
         'today_bs': get_today_bs(),
+        'default_date': default_date,
     })
 
 
@@ -1594,6 +1615,7 @@ def report_form_view(request):
     orders = accessible_orders.filter(report__isnull=True).order_by('-id')
     preselected_order_id = request.GET.get('order_id', '')
 
+    default_fy, default_date = get_default_date_for_fy(request)
     if preselected_order_id:
         existing_report = TravelReport.objects.filter(travel_order_id=preselected_order_id).first()
         if existing_report:
@@ -1642,6 +1664,7 @@ def report_form_view(request):
         'preselected_order_id': preselected_order_id,
         'is_admin': admin_mode,
         'today_bs': get_today_bs(),
+        'default_date': default_date,
     })
 
 

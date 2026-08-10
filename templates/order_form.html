@@ -337,7 +337,7 @@
     </form>
 </div>
 
-<script src="/static/js/nepali_calendar.js?v=2"></script>
+<script src="/static/js/nepali_calendar.js?v=3"></script>
 <script>
     // Live Advance Words conversion
     document.getElementById('advance_input')?.addEventListener('input', function(e) {
@@ -595,12 +595,12 @@
         const stInp = document.getElementById('id_start_date');
         const endInp = document.getElementById('id_end_date');
         const fyInp = document.getElementById('id_fiscal_year');
-        if (ordInp) ordInp.value = '२०८३/०४/२५';
-        if (stInp) stInp.value = '२०८३/०४/२५';
-        if (endInp) endInp.value = '२०८३/०४/२५';
+        if (ordInp) ordInp.value = '{{ default_date|default:"" }}';
+        if (stInp) stInp.value = '{{ default_date|default:"" }}';
+        if (endInp) endInp.value = '{{ default_date|default:"" }}';
         if (fyInp) {
             for (let i = 0; i < fyInp.options.length; i++) {
-                if (fyInp.options[i].value === '२०८३/८४') {
+                if (fyInp.options[i].value === '{{ default_fy }}') {
                     fyInp.selectedIndex = i;
                     break;
                 }

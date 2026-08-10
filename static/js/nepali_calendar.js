@@ -602,7 +602,19 @@
             }
 
     function getTodayBsFormatted() {
+        const fySelect = document.getElementById('id_fiscal_year');
         const todayBs = adToBs(new Date());
+        if (fySelect && fySelect.value) {
+            const startYearStr = fySelect.value.split('/')[0];
+            const startYearInt = parseInt(toEnglishDigits(startYearStr), 10);
+            // If the selected FY is not the current FY, default to Shrawan 1 of that FY
+            if (startYearInt && startYearInt !== todayBs.year && startYearInt !== todayBs.year - 1) {
+                 // Note: FY year logic is a bit complex, but if it's clearly a past year, start at Shrawan 1.
+                 if (startYearInt < todayBs.year || (startYearInt === todayBs.year && todayBs.month < 3)) {
+                     return `${toNepaliDigits(startYearInt)}/०४/०१`;
+                 }
+            }
+        }
         const mStr = String(todayBs.month + 1).padStart(2, '0');
         const dStr = String(todayBs.day).padStart(2, '0');
         return `${toNepaliDigits(todayBs.year)}/${toNepaliDigits(mStr)}/${toNepaliDigits(dStr)}`;

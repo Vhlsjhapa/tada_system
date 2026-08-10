@@ -211,7 +211,7 @@
             </div>
             <div class="form-group">
                 <label>बिल पेश गरेको मिति (नेपाली पात्रो) *</label>
-                <input type="text" name="bill_date" id="id_bill_date" class="nepali-date-picker" value="{% if form_data.bill_date %}{{ form_data.bill_date }}{% else %}{{ today_bs|default:'२०८३/०४/२५' }}{% endif %}" required {% if not orders %}disabled{% endif %}>
+                <input type="text" name="bill_date" id="id_bill_date" class="nepali-date-picker" value="{% if form_data.bill_date %}{{ form_data.bill_date }}{% else %}{{ default_date|default:'२०८३/०४/२५' }}{% endif %}" required {% if not orders %}disabled{% endif %}>
                 <small style="font-size:11px; color:#64748b; margin-top:2px;">(भ्रमण आदेशको अन्तिम मिति वा सो भन्दा पछिको मिति हुनुपर्छ)</small>
             </div>
         </div>
@@ -305,9 +305,9 @@
                     <!-- Default Row 1 -->
                     <tr class="dynamic-bill-row">
                         <td><input type="text" id="row_dep_place" name="departure_place[]" value="भद्रपुर, झापा"></td>
-                        <td><input type="text" id="row_dep_date" name="departure_date[]" class="nepali-date-picker" value="{{ today_bs|default:'२०८३/०४/२५' }}"></td>
+                        <td><input type="text" id="row_dep_date" name="departure_date[]" class="nepali-date-picker" value="{{ default_date|default:'२०८३/०४/२५' }}"></td>
                         <td><input type="text" id="row_arr_place" name="arrival_place[]" value="विर्तामोड, झापा"></td>
-                        <td><input type="text" id="row_arr_date" name="arrival_date[]" class="nepali-date-picker" value="{{ today_bs|default:'२०८३/०४/२५' }}"></td>
+                        <td><input type="text" id="row_arr_date" name="arrival_date[]" class="nepali-date-picker" value="{{ default_date|default:'२०८३/०४/२५' }}"></td>
                         <td><input type="text" name="transport_medium[]" value="सार्वजनिक सवारी"></td>
                         <td><input type="number" name="transport_fare[]" class="calc-field" value="500"></td>
                         <td><input type="number" step="0.01" name="daily_allowance_days[]" id="row_da_days" class="calc-field" value="2.25"></td>
@@ -366,7 +366,7 @@
     </form>
 </div>
 
-<script src="/static/js/nepali_calendar.js?v=2"></script>
+<script src="/static/js/nepali_calendar.js?v=3"></script>
 <script>
     window.isCurrentOrderOfficeVehicle = false;
     window.currentOrderEndDate = '';
