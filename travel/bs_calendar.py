@@ -469,3 +469,51 @@ def get_fiscal_year_from_bs_date(bs_date_str):
     return None
 
 
+import datetime
+
+BS_YEAR_AD_START = {
+    2080: datetime.date(2023, 4, 14),
+    2081: datetime.date(2024, 4, 13),
+    2082: datetime.date(2025, 4, 14),
+    2083: datetime.date(2026, 4, 14),
+    2084: datetime.date(2027, 4, 14),
+    2085: datetime.date(2028, 4, 13),
+}
+
+def get_today_bs(ad_date=None):
+    """
+    Returns today's date in Bikram Sambat (BS) format (e.g. '२०८३/०४/२५').
+    Automatically uses real system date (datetime.date.today()).
+    """
+    if ad_date is None:
+        ad_date = datetime.date.today()
+    if isinstance(ad_date, str):
+        try:
+            ad_date = datetime.datetime.strptime(ad_date, "%Y-%m-%d").date()
+        except ValueError:
+            ad_date = datetime.date.today()
+            
+    bs_y = 2083
+    for y in sorted(BS_YEAR_AD_START.keys(), reverse=True):
+        if ad_date >= BS_YEAR_AD_START[y]:
+            bs_y = y
+            break
+            
+    start_ad = BS_YEAR_AD_START[bs_y]
+    diff_days = (ad_date - start_ad).days
+    if diff_days < 0:
+        return "२०८३/०४/२५"
+        
+    cur_m = 1
+    cur_d = 1
+    for m_days in BS_MONTH_DATA.get(bs_y, BS_MONTH_DATA[2083]):
+        if diff_days >= m_days:
+            diff_days -= m_days
+            cur_m += 1
+        else:
+            break
+            
+    cur_d += diff_days
+    return f"{to_nepali_digits(bs_y)}/{to_nepali_digits(f'{cur_m:02d}')}/{to_nepali_digits(f'{cur_d:02d}')}"
+
+

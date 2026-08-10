@@ -20,7 +20,8 @@ from .bs_calendar import (
     calculate_tada_allowance_days,
     to_nepali_digits,
     to_english_digits,
-    get_fiscal_year_from_bs_date
+    get_fiscal_year_from_bs_date,
+    get_today_bs
 )
 
 
@@ -950,7 +951,7 @@ def order_workflow_action(request, pk, action):
         messages.error(request, "तपाईंलाई यो कार्य गर्ने अनुमति छैन।")
         return redirect(f'/order/{order.id}/')
 
-    today_bs = order.order_date or "२०८२/०४/२०"
+    today_bs = get_today_bs()
 
     if action == 'recommend':
         if not admin_mode and order.created_by == user and not user.is_staff:
@@ -1144,7 +1145,8 @@ def order_form_view(request):
     default_office = Office.get_default_office()
 
     fiscal_years = get_all_fiscal_years()
-    default_fy = "२०८२/८३"
+    today_bs = get_today_bs()
+    default_fy = get_fiscal_year_from_bs_date(today_bs) or "२०८३/८४"
 
     if request.method == 'POST':
         order_date = request.POST.get('order_date')
@@ -1165,6 +1167,7 @@ def order_form_view(request):
                 'is_admin': admin_mode,
                 'user_emp': user_emp,
                 'fiscal_years': fiscal_years,
+                'today_bs': today_bs,
                 'default_fy': request.POST.get('fiscal_year') or default_fy,
             })
 
@@ -1230,6 +1233,7 @@ def order_form_view(request):
         'is_admin': admin_mode,
         'user_emp': user_emp,
         'fiscal_years': fiscal_years,
+        'today_bs': today_bs,
         'default_fy': default_fy,
     })
 

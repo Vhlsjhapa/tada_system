@@ -181,7 +181,7 @@
             </div>
             <div class="form-group">
                 <label>आदेश मिति (नेपाली पात्रो) *</label>
-                <input type="text" id="id_order_date" name="order_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.order_date }}{% elif order %}{{ order.order_date }}{% else %}२०८२/०४/२०{% endif %}" required>
+                <input type="text" id="id_order_date" name="order_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.order_date }}{% elif order %}{{ order.order_date }}{% else %}{{ today_bs|default:'२०८३/०४/२५' }}{% endif %}" required>
             </div>
             <div class="form-group">
                 <label>आर्थिक वर्ष (Fiscal Year) *</label>
