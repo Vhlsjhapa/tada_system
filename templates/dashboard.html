@@ -872,7 +872,7 @@
                         </td>
                         <td>
                             {% if is_admin or is_finance %}
-                            <a href="/order/{{ ord.pk }}/action/register/?next=/" class="btn-table" style="background:#2563eb; color:white; font-weight:700; padding:6px 14px; font-size:12px; border-radius:6px;">
+                            <a href="/order/{{ ord.pk }}/action/register/?next=/" onclick="return promptRegisterNumber('{{ ord.pk }}');" class="btn-table" style="background:#2563eb; color:white; font-weight:700; padding:6px 14px; font-size:12px; border-radius:6px;">
                                 🔢 दर्ता गरी आदेश नं. कायम गर्नुहोस्
                             </a>
                             {% else %}
@@ -1129,5 +1129,15 @@
 </div>
 
 <script src="/static/js/nepali_calendar.js"></script>
+<script>
+function promptRegisterNumber(orderId, defaultNum) {
+    var defVal = defaultNum || "००१";
+    var val = prompt("भ्रमण आदेश दर्ता नम्बर (Reg / Order No.) प्रविष्टि गर्नुहोस्:\n(नम्बर नफेरी 'OK' थिचेमा वा खाली छाडेमा स्वतः '" + defVal + "' कायम हुनेछ):", defVal);
+    if (val !== null) {
+        window.location.href = "/order/" + orderId + "/action/register/?order_number=" + encodeURIComponent(val) + "&next=/";
+    }
+    return false;
+}
+</script>
 </body>
 </html>

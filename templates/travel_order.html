@@ -184,7 +184,7 @@
             {% endif %}
         {% elif record.status == 'APPROVED' %}
             {% if is_admin or is_finance %}
-                <a href="/order/{{ record.id }}/action/register/" style="margin-left: 10px; background:#2563eb; color:white; padding: 7px 16px; border-radius:6px; text-decoration:none; font-weight:700; font-size:13.5px; display:inline-flex; align-items:center; gap:5px;">
+                <a href="/order/{{ record.id }}/action/register/" onclick="return promptRegisterNumber('{{ record.id }}');" style="margin-left: 10px; background:#2563eb; color:white; padding: 7px 16px; border-radius:6px; text-decoration:none; font-weight:700; font-size:13.5px; display:inline-flex; align-items:center; gap:5px;">
                     🔢 दर्ता गरी आदेश नं. कायम गर्नुहोस् (दर्ता / लेखा शाखा)
                 </a>
             {% else %}
@@ -340,5 +340,15 @@
 
     </div>
 
+<script>
+function promptRegisterNumber(orderId, defaultNum) {
+    var defVal = defaultNum || "००१";
+    var val = prompt("भ्रमण आदेश दर्ता नम्बर (Reg / Order No.) प्रविष्टि गर्नुहोस्:\n(नम्बर नफेरी 'OK' थिचेमा वा खाली छाडेमा स्वतः '" + defVal + "' कायम हुनेछ):", defVal);
+    if (val !== null) {
+        window.location.href = "/order/" + orderId + "/action/register/?order_number=" + encodeURIComponent(val);
+    }
+    return false;
+}
+</script>
 </body>
 </html>

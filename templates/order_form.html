@@ -173,11 +173,12 @@
                     ✨ दर्ता पश्चात् अटोमेटिक क्रमिक आदेश नं. कायम हुनेछ
                 </span>
             {% endif %}
-        </div>
-        
-        <input type="hidden" id="id_order_number" name="order_number" value="{% if form_data %}{{ form_data.order_number }}{% elif order %}{{ order.order_number }}{% else %}{% endif %}">
-
         <div class="form-grid">
+            <div class="form-group">
+                <label>भ्रमण आदेश / दर्ता नं. (Reg / Order No.)</label>
+                <input type="text" id="id_order_number" name="order_number" value="{% if form_data %}{{ form_data.order_number }}{% elif order %}{{ order.order_number }}{% else %}{% endif %}" placeholder="उदा: ००१ (म्यानुअल दर्ताका लागि वा खाली छाड्नुहोस्)">
+                <small style="font-size:11px; color:#64748b;">(अर्डर सिर्जना गर्दा म्यानुअल दर्ता नम्बर हाल्न वा दर्ता गर्दा अटो कायम हुन खाली छाड्न सकिन्छ)</small>
+            </div>
             <div class="form-group">
                 <label>आदेश मिति (नेपाली पात्रो) *</label>
                 <input type="text" id="id_order_date" name="order_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.order_date }}{% elif order %}{{ order.order_date }}{% else %}२०८२/०४/२०{% endif %}" required>
@@ -189,7 +190,7 @@
                     <option value="{{ fy }}" {% if form_data and form_data.fiscal_year == fy %}selected{% elif order and order.fiscal_year == fy %}selected{% elif not order and not form_data and fy == default_fy %}selected{% endif %}>{{ fy }}</option>
                     {% endfor %}
                 </select>
-                <small style="font-size:11px; color:#64748b;">(मिति अनुसार स्वतः आर्थिक वर्ष परिवर्तन हुन्छ वा ड्रपडाउनबाट छनोट गर्न सक्नुहुन्छ)</small>
+                <small style="font-size:11px; color:#64748b;">(मिति अनुसार स्वतः अ.व. छनोट हुन्छ)</small>
             </div>
         </div>
 

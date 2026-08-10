@@ -9,6 +9,7 @@ from django.db.models import Q
 from functools import wraps
 import os
 import shutil
+import re
 from django.conf import settings
 from .models import Office, Employee, TravelOrder, TravelBill, TravelBillItem, TravelReport, FiscalYearSequence, normalize_nepali_fiscal_year
 from .bs_calendar import (
@@ -988,7 +989,16 @@ def order_workflow_action(request, pk, action):
         if order.status not in ['APPROVED', 'FINANCE_CLEARED']:
             messages.error(request, "कार्यालय प्रमुख / स्वीकृत गर्ने पदाधिकारीले भ्रमण आदेश स्वीकृत (Approve) गरेपछि मात्र दर्ता गरी आदेश नं. कायम गर्न मिल्छ।")
             return redirect(f'/order/{order.id}/')
+        
+        manual_num = request.POST.get('order_number') or request.GET.get('order_number', '').strip()
+        if manual_num:
+            order.order_number = to_nepali_digits(manual_num)
+        elif not order.order_number:
+            order.order_number = TravelOrder.allocate_next_order_number(order.fiscal_year, order.office_ref)
+
         order.status = 'REGISTERED'
+        if not order.admin_date:
+            order.admin_date = today_bs
         order.save()
         messages.success(request, f"भ्रमण आदेश #{order.id} दर्ता भई आदेश नं. '{order.order_number}' कायम भयो।")
 
