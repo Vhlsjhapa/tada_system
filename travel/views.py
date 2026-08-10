@@ -972,6 +972,14 @@ def order_workflow_action(request, pk, action):
         order.save()
         messages.warning(request, f"भ्रमण आदेश #{order.id} अस्वीकृत (REJECTED) गरियो।")
 
+    elif action in ['reset', 'clean', 'reset_all', 'delete_all']:
+        reports_count, _ = TravelReport.objects.all().delete()
+        bills_count, _ = TravelBill.objects.all().delete()
+        orders_count, _ = TravelOrder.objects.all().delete()
+        FiscalYearSequence.objects.all().update(last_number=0)
+        messages.success(request, f"✅ अनलाइन सर्भरका सम्पूर्ण पुराना डाटाहरू ({orders_count} आदेश, {bills_count} बिल) मेटाई क्रमिक आदेश नम्बर ००१ बाट सुरु हुने गरी रिसेट गरियो।")
+        return redirect('/')
+
     next_url = request.GET.get('next') or request.META.get('HTTP_REFERER') or f'/order/{order.id}/'
     return redirect(next_url)
 
