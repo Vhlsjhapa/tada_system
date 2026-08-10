@@ -181,7 +181,7 @@
             </div>
             <div class="form-group">
                 <label>आदेश मिति (नेपाली पात्रो) *</label>
-                <input type="text" id="id_order_date" name="order_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.order_date }}{% elif order %}{{ order.order_date }}{% else %}{{ today_bs|default:'२०८३/०४/२५' }}{% endif %}" required>
+                <input type="text" id="id_order_date" name="order_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.order_date }}{% elif order %}{{ order.order_date }}{% else %}२०८३/०४/२५{% endif %}" required>
             </div>
             <div class="form-group">
                 <label>आर्थिक वर्ष (Fiscal Year) *</label>
@@ -251,11 +251,11 @@
         <div class="form-grid">
             <div class="form-group">
                 <label>भ्रमण शुरु मिति (नेपाली पात्रो) *</label>
-                <input type="text" id="id_start_date" name="start_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.start_date }}{% elif order %}{{ order.start_date }}{% else %}{{ today_bs|default:'२०८३/०४/२५' }}{% endif %}" required placeholder="२०८३/०४/२५">
+                <input type="text" id="id_start_date" name="start_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.start_date }}{% elif order %}{{ order.start_date }}{% else %}२०८३/०४/२५{% endif %}" required placeholder="२०८३/०४/२५">
             </div>
             <div class="form-group">
                 <label>भ्रमण अन्त्य मिति (नेपाली पात्रो) *</label>
-                <input type="text" id="id_end_date" name="end_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.end_date }}{% elif order %}{{ order.end_date }}{% else %}{{ today_bs|default:'२०८३/०४/२५' }}{% endif %}" required placeholder="२०८३/०४/२५">
+                <input type="text" id="id_end_date" name="end_date" class="nepali-date-picker" value="{% if form_data %}{{ form_data.end_date }}{% elif order %}{{ order.end_date }}{% else %}२०८३/०४/२५{% endif %}" required placeholder="२०८३/०४/२५">
             </div>
         </div>
 
@@ -432,6 +432,60 @@
         }
     });
 
+    // Bidirectional Sync: Changing Fiscal Year updates Order Dates to fit that Fiscal Year
+    function onFiscalYearChange() {
+        const fySelect = document.getElementById('id_fiscal_year');
+        const orderDateInput = document.getElementById('id_order_date');
+        const startDateInput = document.getElementById('id_start_date');
+        const endDateInput = document.getElementById('id_end_date');
+        if (!fySelect) return;
+
+        const fyVal = fySelect.value.trim();
+        if (!fyVal) return;
+
+        const nepToEng = {'०':'0','१':'1','२':'2','३':'3','४':'4','५':'5','६':'6','७':'7','८':'8','९':'9'};
+        const engToNep = {'0':'०','1':'१','2':'२','3':'३','4':'४','5':'५','6':'६','7':'७','8':'८','9':'९'};
+        const toNep = (n) => String(n).split('').map(c => engToNep[c] || c).join('');
+
+        let norm = fyVal.split('').map(c => nepToEng[c] || c).join('');
+        let parts = norm.split(/[\/\-]/);
+        if (parts.length >= 1) {
+            let startY = parseInt(parts[0], 10);
+            if (!isNaN(startY) && startY >= 2000 && startY <= 2100) {
+                let targetDate;
+                if (startY === 2083) {
+                    targetDate = '२०८३/०४/२५';
+                } else {
+                    targetDate = `${toNep(startY)}/०४/०१`;
+                }
+
+                if (orderDateInput) {
+                    orderDateInput.value = targetDate;
+                }
+                if (startDateInput) {
+                    startDateInput.value = targetDate;
+                }
+                if (endDateInput) {
+                    endDateInput.value = targetDate;
+                }
+            }
+        }
+        fetchNextOrderNumberPreview();
+        updateDateValidationUI();
+        if (orderDateInput && window.NepaliCalendar && window.NepaliCalendar.getDatePicker) {
+            const picker = window.NepaliCalendar.getDatePicker();
+            [orderDateInput, startDateInput, endDateInput].forEach(inp => {
+                if (inp && inp.value) {
+                    const p = window.NepaliCalendar.parseBsDate(inp.value);
+                    if (p) {
+                        const weekday = window.NepaliCalendar.getBSWeekday(p.year, p.month - 1, p.day);
+                        picker.updateInputHelper(inp, `साउन ${window.NepaliCalendar.toNepaliDigits(p.day)} गते, ${['आइतबार','सोमबार','मङ्गलबार','बुधबार','बिहीबार','शुक्रबार','शनिबार'][weekday]}`);
+                    }
+                }
+            });
+        }
+    }
+
     // Auto-calculate Fiscal Year from Order Date (Shrawan 1 to Ashadh end)
     function autoCalculateFiscalYear() {
         const orderDateInput = document.getElementById('id_order_date');
@@ -525,7 +579,9 @@
 
     const fySelectEl = document.getElementById('id_fiscal_year');
     if (fySelectEl) {
-        fySelectEl.addEventListener('change', fetchNextOrderNumberPreview);
+        fySelectEl.addEventListener('change', function() {
+            onFiscalYearChange();
+        });
     }
     const officeRefEl = document.getElementById('id_office_ref');
     if (officeRefEl) {
@@ -533,13 +589,44 @@
     }
 
     // Initialize on load
-    setTimeout(function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if not order and not form_data %}
+        const ordInp = document.getElementById('id_order_date');
+        const stInp = document.getElementById('id_start_date');
+        const endInp = document.getElementById('id_end_date');
+        const fyInp = document.getElementById('id_fiscal_year');
+        if (ordInp) ordInp.value = '२०८३/०४/२५';
+        if (stInp) stInp.value = '२०८३/०४/२५';
+        if (endInp) endInp.value = '२०८३/०४/२५';
+        if (fyInp) {
+            for (let i = 0; i < fyInp.options.length; i++) {
+                if (fyInp.options[i].value === '२०८३/८४') {
+                    fyInp.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+        {% endif %}
+
         updateDateValidationUI();
         {% if not order %}
         autoCalculateFiscalYear();
         {% endif %}
         fetchNextOrderNumberPreview();
-    }, 300);
+    });
+
+    setTimeout(function() {
+        {% if not order and not form_data %}
+        const ordInp = document.getElementById('id_order_date');
+        const stInp = document.getElementById('id_start_date');
+        const endInp = document.getElementById('id_end_date');
+        if (ordInp && (!ordInp.value || ordInp.value.includes('२०८२'))) ordInp.value = '२०८३/०४/२५';
+        if (stInp && (!stInp.value || stInp.value.includes('२०८२'))) stInp.value = '२०८३/०४/२५';
+        if (endInp && (!endInp.value || endInp.value.includes('२०८२'))) endInp.value = '२०८३/०४/२५';
+        {% endif %}
+        updateDateValidationUI();
+        fetchNextOrderNumberPreview();
+    }, 200);
 </script>
 
 </body>
