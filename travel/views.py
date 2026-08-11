@@ -637,6 +637,12 @@ def manage_users(request):
             else:
                 target_user.set_password(new_password)
                 target_user.save()
+                
+                # If they reset their own password, keep them logged in
+                if request.user.pk == target_user.pk:
+                    from django.contrib.auth import update_session_auth_hash
+                    update_session_auth_hash(request, target_user)
+                    
                 messages.success(request, f"प्रयोगकर्ता '{target_user.username}' को पासवर्ड सफलतापूर्वक परिवर्तन गरियो।")
                 return redirect('/users/')
                 
@@ -660,33 +666,44 @@ def manage_users(request):
             
             if user_id:
                 target_user = get_object_or_404(User, pk=user_id)
-                target_user.first_name = first_name
-                target_user.last_name = last_name
-                target_user.email = email
-                target_user.is_staff = is_staff_val
-                target_user.is_superuser = is_superuser_val
-                target_user.is_active = is_active
-                if password:
-                    target_user.set_password(password)
-                target_user.save()
-
-                target_user.groups.clear()
-                if 'finance' in roles: target_user.groups.add(finance_group)
-                if 'approver' in roles: target_user.groups.add(approver_group)
-                if 'register' in roles: target_user.groups.add(register_group)
-                if 'attendance' in roles: target_user.groups.add(attendance_group)
                 
-                if employee_id:
-                    Employee.objects.filter(user=target_user).exclude(pk=employee_id).update(user=None)
-                    emp = Employee.objects.filter(pk=employee_id).first()
-                    if emp:
-                        emp.user = target_user
-                        emp.save(update_fields=['user'])
+                if username and username != target_user.username and User.objects.filter(username=username).exists():
+                    error_message = f"युजरनेम '{username}' पहिले नै अर्को प्रयोगकर्ताले प्रयोग गरिसकेको छ।"
                 else:
-                    Employee.objects.filter(user=target_user).update(user=None)
+                    if username:
+                        target_user.username = username
+                    target_user.first_name = first_name
+                    target_user.last_name = last_name
+                    target_user.email = email
+                    target_user.is_staff = is_staff_val
+                    target_user.is_superuser = is_superuser_val
+                    target_user.is_active = is_active
+                    if password:
+                        target_user.set_password(password)
+                    target_user.save()
+
+                    # If the user updated their own profile/password, keep them logged in
+                    if request.user.pk == target_user.pk:
+                        from django.contrib.auth import update_session_auth_hash
+                        update_session_auth_hash(request, target_user)
+
+                    target_user.groups.clear()
+                    if 'finance' in roles: target_user.groups.add(finance_group)
+                    if 'approver' in roles: target_user.groups.add(approver_group)
+                    if 'register' in roles: target_user.groups.add(register_group)
+                    if 'attendance' in roles: target_user.groups.add(attendance_group)
                     
-                messages.success(request, f"प्रयोगकर्ता '{target_user.username}' को विवरण अद्यावधिक गरियो।")
-                return redirect('/users/')
+                    if employee_id:
+                        Employee.objects.filter(user=target_user).exclude(pk=employee_id).update(user=None)
+                        emp = Employee.objects.filter(pk=employee_id).first()
+                        if emp:
+                            emp.user = target_user
+                            emp.save(update_fields=['user'])
+                    else:
+                        Employee.objects.filter(user=target_user).update(user=None)
+                        
+                    messages.success(request, f"प्रयोगकर्ता '{target_user.username}' को विवरण अद्यावधिक गरियो।")
+                    return redirect('/users/')
             else:
                 if not username or not password:
                     error_message = "नयाँ खाताको लागि युजरनेम र पासवर्ड दुवै अनिवार्य छन्।"
