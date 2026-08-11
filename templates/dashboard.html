@@ -819,7 +819,7 @@
                             </span>
                         </td>
                         <td>
-                            {% if is_admin or request.user.is_staff %}
+                            {% if is_admin or is_approver %}
                             <a href="/order/{{ ord.pk }}/action/approve/?next=/" class="btn-table" style="background:#dcfce7; color:#15803d; border:1px solid #86efac; font-weight:700; padding:6px 12px; font-size:12px;">
                                 ✅ स्वीकृत गर्नुहोस् (Approve)
                             </a>
