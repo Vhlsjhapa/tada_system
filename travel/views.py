@@ -229,11 +229,11 @@ def get_default_date_for_fy(request, today_bs=None):
 
 
 def get_active_fiscal_year(request):
-    """Returns active fiscal year from session or default current FY ('२०८३/८४')."""
+    """Returns active fiscal year from session or default current FY."""
     fy = request.session.get('active_fiscal_year') if hasattr(request, 'session') else None
     if fy and len(str(fy).strip()) >= 5:
-        return str(fy).strip()
-    return get_fiscal_year_from_bs_date(get_today_bs()) or "२०८३/८४"
+        return normalize_nepali_fiscal_year(str(fy).strip())
+    return normalize_nepali_fiscal_year(get_fiscal_year_from_bs_date(get_today_bs()) or "२०८३/०८४")
 
 
 @login_required
