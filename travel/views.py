@@ -193,14 +193,16 @@ def get_all_fiscal_years():
     cur_fy = get_fiscal_year_from_bs_date(get_today_bs()) or '२०८३/८४'
     STANDARD_FISCAL_YEARS = [
         cur_fy,
-        '२०८३/८४',
-        '२०८४/८५',
-        '२०८२/८३',
+        '२०८१/०८२',
+        '२०८२/०८३',
+        '२०८३/०८४',
+        '२०८४/०८५',
+        '२०८५/०८६',
     ]
     db_fys = [fy.strip() for fy in TravelOrder.objects.values_list('fiscal_year', flat=True).distinct() if fy and fy.strip()]
     all_fys_set = set(STANDARD_FISCAL_YEARS + db_fys)
     ordered_fys = [cur_fy]
-    for candidate in ['२०८३/८४', '२०८४/८५', '२०८२/८३']:
+    for candidate in ['२०८१/०८२', '२०८२/०८३', '२०८३/०८४', '२०८४/०८५', '२०८५/०८६']:
         if candidate not in ordered_fys:
             ordered_fys.append(candidate)
     for fy in sorted(list(all_fys_set)):
@@ -246,6 +248,32 @@ def set_active_fiscal_year(request):
 
 # ==============================================================================
 # Authentication Views (लगइन र लगआउट)
+
+def password_reset_view(request):
+    default_office = DefaultOffice.objects.first()
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        new_password = request.POST.get('password', '')
+        if username and new_password:
+            try:
+                user = User.objects.get(username=username)
+                user.set_password(new_password)
+                user.save()
+                return render(request, 'login.html', {
+                    'success_message': 'पासवर्ड सफलतापूर्वक रिसेट भयो! कृपया नयाँ पासवर्ड प्रयोग गरी लगइन गर्नुहोस्।',
+                    'default_office': default_office,
+                    'fiscal_years': get_all_fiscal_years(),
+                    'default_fy': get_fiscal_year_from_bs_date(get_today_bs()) or '२०८३/८४'
+                })
+            except User.DoesNotExist:
+                return render(request, 'password_reset.html', {
+                    'error_message': 'यो युजरनेम भएको प्रयोगकर्ता भेटिएन।',
+                    'default_office': default_office
+                })
+    return render(request, 'password_reset.html', {
+        'default_office': default_office
+    })
+
 # ==============================================================================
 
 def login_view(request):
@@ -959,6 +987,8 @@ def api_order_detail(request, pk):
         report_reg_no = ''
         if hasattr(order, 'report') and order.report and order.report.report_reg_no:
             report_reg_no = order.report.report_reg_no
+        else:
+            report_reg_no = order.order_number
 
         duration = get_bs_duration_days(order.start_date, order.end_date) or 1
         recommended_da_days = calculate_tada_allowance_days(duration)
@@ -1562,6 +1592,8 @@ def bill_form_view(request):
         report_reg_no = request.POST.get('report_reg_no', '').strip()
         if not report_reg_no and hasattr(order, 'report') and order.report and order.report.report_reg_no:
             report_reg_no = order.report.report_reg_no
+        if not report_reg_no:
+            report_reg_no = order.order_number
 
         paying_agency_type = request.POST.get('paying_agency_type', 'INTERNAL').strip()
         external_agency_name = request.POST.get('external_agency_name', '').strip()

@@ -7,6 +7,7 @@ urlpatterns = [
     
     # Authentication (प्रमाणीकरण)
     path('login/', views.login_view, name='login'),
+    path('password_reset/', views.password_reset_view, name='password_reset'),
     path('logout/', views.logout_view, name='logout'),
     path('set-active-fy/', views.set_active_fiscal_year, name='set_active_fiscal_year'),
     
