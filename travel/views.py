@@ -646,6 +646,16 @@ def manage_users(request):
                 messages.success(request, f"प्रयोगकर्ता '{target_user.username}' को पासवर्ड सफलतापूर्वक परिवर्तन गरियो।")
                 return redirect('/users/')
                 
+        elif action == 'delete_user' and user_id:
+            target_user = get_object_or_404(User, pk=user_id)
+            if target_user.is_superuser or target_user.pk == request.user.pk:
+                messages.error(request, "तपाईंले आफूलाई वा मुख्य Admin लाई मेटाउन सक्नुहुन्न।")
+            else:
+                username_deleted = target_user.username
+                target_user.delete()
+                messages.success(request, f"प्रयोगकर्ता '{username_deleted}' सफलतापूर्वक मेटाइयो।")
+            return redirect('/users/')
+                
         else:
             username = request.POST.get('username', '').strip()
             first_name = request.POST.get('first_name', '').strip()
@@ -670,10 +680,9 @@ def manage_users(request):
                 if username and username != target_user.username and User.objects.filter(username=username).exists():
                     error_message = f"युजरनेम '{username}' पहिले नै अर्को प्रयोगकर्ताले प्रयोग गरिसकेको छ।"
                 else:
-                    if target_user.username == 'admin':
+                    if target_user.is_superuser:
                         is_staff_val = True
                         is_superuser_val = True
-                        username = 'admin'
                         is_active = True
 
                     if username:
