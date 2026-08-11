@@ -249,32 +249,7 @@ def set_active_fiscal_year(request):
 # ==============================================================================
 # Authentication Views (लगइन र लगआउट)
 
-def password_reset_view(request):
-    default_office = DefaultOffice.objects.first()
-    if request.method == 'POST':
-        username = request.POST.get('username', '').strip()
-        new_password = request.POST.get('password', '')
-        if username and new_password:
-            try:
-                user = User.objects.get(username=username)
-                user.set_password(new_password)
-                user.save()
-                return render(request, 'login.html', {
-                    'success_message': 'पासवर्ड सफलतापूर्वक रिसेट भयो! कृपया नयाँ पासवर्ड प्रयोग गरी लगइन गर्नुहोस्।',
-                    'default_office': default_office,
-                    'fiscal_years': get_all_fiscal_years(),
-                    'default_fy': get_fiscal_year_from_bs_date(get_today_bs()) or '२०८३/८४'
-                })
-            except User.DoesNotExist:
-                return render(request, 'password_reset.html', {
-                    'error_message': 'यो युजरनेम भएको प्रयोगकर्ता भेटिएन।',
-                    'default_office': default_office
-                })
-    return render(request, 'password_reset.html', {
-        'default_office': default_office
-    })
 
-# ==============================================================================
 
 def login_view(request):
     """नेपाली लगइन प्रणाली - User Login View."""
