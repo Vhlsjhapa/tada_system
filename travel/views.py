@@ -548,37 +548,47 @@ def manage_employees(request):
                     office_obj = Office.objects.filter(id=office_ref_id).first() if office_ref_id else Office.get_default_office()
                     user_obj = User.objects.filter(id=user_id).first() if user_id else None
                     
-                    if emp_id:
-                        emp = get_object_or_404(Employee, pk=emp_id)
-                        emp.name = name
-                        emp.code_no = code_no
-                        emp.designation = designation
-                        emp.level = level
-                        emp.office_ref = office_obj
-                        emp.office = office_obj.name if office_obj else emp.office
-                        emp.permanent_address = permanent_address
-                        emp.mobile_no = mobile_no
-                        emp.user = user_obj
-                        emp.is_active = is_active
-                        emp.daily_allowance_rate = daily_allowance_rate
-                        emp.save()
-                        messages.success(request, f"कर्मचारी '{emp.name}' को विवरण सफलतापूर्वक अद्यावधिक गरियो।")
-                    else:
-                        emp = Employee.objects.create(
-                            name=name,
-                            code_no=code_no,
-                            designation=designation,
-                            level=level,
-                            office_ref=office_obj,
-                            office=office_obj.name if office_obj else '',
-                            permanent_address=permanent_address,
-                            mobile_no=mobile_no,
-                            user=user_obj,
-                            is_active=is_active,
-                            daily_allowance_rate=daily_allowance_rate
-                        )
-                        messages.success(request, f"नयाँ कर्मचारी '{emp.name}' सफलतापूर्वक दर्ता गरियो।")
-                    return redirect('/employees/')
+                    user_duplicate = False
+                    if user_obj:
+                        user_dup_check = Employee.objects.filter(user=user_obj)
+                        if emp_id:
+                            user_dup_check = user_dup_check.exclude(pk=emp_id)
+                        if user_dup_check.exists():
+                            user_duplicate = True
+                            error_message = f"युजर खाता '{user_obj.username}' पहिले नै अर्को कर्मचारीसँग जोडिएको छ।"
+                            
+                    if not user_duplicate:
+                        if emp_id:
+                            emp = get_object_or_404(Employee, pk=emp_id)
+                            emp.name = name
+                            emp.code_no = code_no
+                            emp.designation = designation
+                            emp.level = level
+                            emp.office_ref = office_obj
+                            emp.office = office_obj.name if office_obj else emp.office
+                            emp.permanent_address = permanent_address
+                            emp.mobile_no = mobile_no
+                            emp.user = user_obj
+                            emp.is_active = is_active
+                            emp.daily_allowance_rate = daily_allowance_rate
+                            emp.save()
+                            messages.success(request, f"कर्मचारी '{emp.name}' को विवरण सफलतापूर्वक अद्यावधिक गरियो।")
+                        else:
+                            emp = Employee.objects.create(
+                                name=name,
+                                code_no=code_no,
+                                designation=designation,
+                                level=level,
+                                office_ref=office_obj,
+                                office=office_obj.name if office_obj else '',
+                                permanent_address=permanent_address,
+                                mobile_no=mobile_no,
+                                user=user_obj,
+                                is_active=is_active,
+                                daily_allowance_rate=daily_allowance_rate
+                            )
+                            messages.success(request, f"नयाँ कर्मचारी '{emp.name}' सफलतापूर्वक दर्ता गरियो।")
+                        return redirect('/employees/')
 
     employees = Employee.objects.select_related('office_ref', 'user').order_by('name')
     offices = Office.objects.all().order_by('-is_default', 'name')
