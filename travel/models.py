@@ -187,6 +187,7 @@ class TravelOrder(models.Model):
         ('APPROVED', 'स्वीकृत'),
         ('FINANCE_CLEARED', 'लेखाबाट फछ्र्यौट भएको'),
         ('REGISTERED', 'दर्ता भई अन्तिम भएको'),
+        ('ATTENDANCE_RECORDED', 'हाजिरी खातामा चढाइएको'),
         ('REJECTED', 'अस्वीकृत / फिर्ता'),
     )
 

@@ -755,8 +755,12 @@
             <div class="stat-num" style="color:#d97706;">{{ pending_bills_nepali }}</div>
         </div>
         <div class="stat-card" style="border-left: 3px solid #3b82f6;">
-            <div class="stat-label">प्रक्रियामा रहेका आदेश</div>
-            <div class="stat-num" style="color:#2563eb;">{{ pending_actions_nepali }}</div>
+            <div class="stat-label">दर्ता गर्न बाँकी आदेश</div>
+            <div class="stat-num" style="color:#2563eb;">{{ pending_registration_nepali }}</div>
+        </div>
+        <div class="stat-card" style="border-left: 3px solid #8b5cf6;">
+            <div class="stat-label">हाजिरी जनाउन बाँकी</div>
+            <div class="stat-num" style="color:#7c3aed;">{{ pending_attendance_nepali }}</div>
         </div>
         <div class="stat-card" style="border-left: 3px solid #8b5cf6;">
             <div class="stat-label">अन्य निकायबाट भुक्तानी</div>
@@ -874,7 +878,7 @@
                             </span>
                         </td>
                         <td>
-                            {% if is_admin or is_attendance %}
+                            {% if is_admin or is_register or is_finance %}
                             <a href="/order/{{ ord.pk }}/action/register/?next=/" onclick="return promptRegisterNumber('{{ ord.pk }}');" class="btn-table" style="background:#2563eb; color:white; font-weight:700; padding:6px 14px; font-size:12px; border-radius:6px;">
                                 🔢 दर्ता गरी आदेश नं. कायम गर्नुहोस्
                             </a>

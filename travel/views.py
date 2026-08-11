@@ -122,6 +122,15 @@ def is_attendance_user(user):
     return user.groups.filter(name__in=['Attendance', 'हाजिरी', 'प्रशासन', 'हाजिरी शाखा']).exists()
 
 
+def is_register_user(user):
+    """Checks if the user has Register (दर्ता शाखा) privileges."""
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser or user.is_staff:
+        return True
+    return user.groups.filter(name__in=['Register', 'दर्ता', 'दर्ता शाखा']).exists()
+
+
 def admin_required(view_func):
     """Decorator ensuring that only admin users can access the view."""
     @wraps(view_func)
@@ -320,6 +329,7 @@ def dashboard(request):
 
     finance_mode = is_finance_user(user)
     approver_mode = is_approver(user)
+    register_mode = is_register_user(user)
     attendance_mode = is_attendance_user(user)
 
     # Action Queues
@@ -329,8 +339,8 @@ def dashboard(request):
     else:
         pending_approval_orders = my_orders.filter(status='PENDING')
 
-    # 2. Pending Registration Queue (Attendance/Register desk allocation: status='APPROVED')
-    if admin_mode or attendance_mode:
+    # 2. Pending Registration Queue (Register desk allocation: status='APPROVED')
+    if admin_mode or register_mode or finance_mode:
         pending_registration_orders = TravelOrder.objects.filter(status='APPROVED').select_related('employee', 'office_ref', 'created_by').order_by('-id')
     else:
         pending_registration_orders = my_orders.filter(status='APPROVED')
@@ -363,9 +373,10 @@ def dashboard(request):
     total_orders_count = orders.count()
     total_bills_count = bills.count()
     total_reports_count = reports.count()
-    pending_bills_count = orders.filter(status__in=['REGISTERED', 'FINANCE_CLEARED'], bill__isnull=True).count()
+    pending_bills_count = orders.filter(status__in=['ATTENDANCE_RECORDED', 'REGISTERED', 'FINANCE_CLEARED'], bill__isnull=True).count()
     pending_approval_count = pending_approval_orders.count()
     pending_registration_count = pending_registration_orders.count()
+    pending_attendance_count = pending_attendance_orders.count()
     external_bills_count = bills.filter(paying_agency_type='EXTERNAL').count()
     
     return render(request, 'dashboard.html', {
@@ -373,6 +384,7 @@ def dashboard(request):
         'my_orders': my_orders,
         'pending_approval_orders': pending_approval_orders,
         'pending_registration_orders': pending_registration_orders,
+        'pending_attendance_orders': pending_attendance_orders,
         'registered_orders': registered_orders,
         'bills': bills,
         'reports': reports,
@@ -380,7 +392,10 @@ def dashboard(request):
         'offices': offices,
         'default_office': default_office,
         'is_admin': admin_mode,
+        'is_approver': approver_mode,
         'is_finance': finance_mode,
+        'is_register': register_mode,
+        'is_attendance': attendance_mode,
         'current_user_employee': user_emp,
         'total_orders_count': total_orders_count,
         'total_bills_count': total_bills_count,
@@ -388,6 +403,7 @@ def dashboard(request):
         'pending_bills_count': pending_bills_count,
         'pending_approval_count': pending_approval_count,
         'pending_registration_count': pending_registration_count,
+        'pending_attendance_count': pending_attendance_count,
         'external_bills_count': external_bills_count,
         'active_fiscal_year': get_active_fiscal_year(request),
         'fiscal_years': get_all_fiscal_years(),
@@ -397,6 +413,7 @@ def dashboard(request):
         'pending_bills_nepali': to_nepali_digits(pending_bills_count),
         'pending_approval_nepali': to_nepali_digits(pending_approval_count),
         'pending_registration_nepali': to_nepali_digits(pending_registration_count),
+        'pending_attendance_nepali': to_nepali_digits(pending_attendance_count),
         'external_bills_nepali': to_nepali_digits(external_bills_count),
     })
 
@@ -629,13 +646,17 @@ def manage_users(request):
             last_name = request.POST.get('last_name', '').strip()
             email = request.POST.get('email', '').strip()
             password = request.POST.get('password', '').strip()
-            role = request.POST.get('role', 'user')
+            roles = request.POST.getlist('roles')
             employee_id = request.POST.get('employee_id')
             is_active = bool(request.POST.get('is_active', True))
             
-            is_staff_val = (role == 'admin')
-            is_superuser_val = (role == 'admin')
+            is_staff_val = ('admin' in roles)
+            is_superuser_val = ('admin' in roles)
+            
             finance_group, _ = Group.objects.get_or_create(name='Finance')
+            approver_group, _ = Group.objects.get_or_create(name='Approver')
+            register_group, _ = Group.objects.get_or_create(name='Register')
+            attendance_group, _ = Group.objects.get_or_create(name='Attendance')
             
             if user_id:
                 target_user = get_object_or_404(User, pk=user_id)
@@ -649,10 +670,11 @@ def manage_users(request):
                     target_user.set_password(password)
                 target_user.save()
 
-                if role == 'finance':
-                    target_user.groups.add(finance_group)
-                else:
-                    target_user.groups.remove(finance_group)
+                target_user.groups.clear()
+                if 'finance' in roles: target_user.groups.add(finance_group)
+                if 'approver' in roles: target_user.groups.add(approver_group)
+                if 'register' in roles: target_user.groups.add(register_group)
+                if 'attendance' in roles: target_user.groups.add(attendance_group)
                 
                 if employee_id:
                     Employee.objects.filter(user=target_user).exclude(pk=employee_id).update(user=None)
@@ -681,8 +703,10 @@ def manage_users(request):
                         is_superuser=is_superuser_val,
                         is_active=is_active
                     )
-                    if role == 'finance':
-                        new_user.groups.add(finance_group)
+                    if 'finance' in roles: new_user.groups.add(finance_group)
+                    if 'approver' in roles: new_user.groups.add(approver_group)
+                    if 'register' in roles: new_user.groups.add(register_group)
+                    if 'attendance' in roles: new_user.groups.add(attendance_group)
 
                     if employee_id:
                         emp = Employee.objects.filter(pk=employee_id).first()
@@ -969,9 +993,10 @@ def order_workflow_action(request, pk, action):
     admin_mode = is_admin(user)
     finance_mode = is_finance_user(user)
     approver_mode = is_approver(user)
+    register_mode = is_register_user(user)
     attendance_mode = is_attendance_user(user)
 
-    if not admin_mode and not finance_mode and not approver_mode and not attendance_mode and not user_can_access_order(user, order):
+    if not admin_mode and not finance_mode and not approver_mode and not register_mode and not attendance_mode and not user_can_access_order(user, order):
         messages.error(request, "तपाईंलाई यो कार्य गर्ने अनुमति छैन।")
         return redirect(f'/order/{order.id}/')
 
@@ -1016,7 +1041,7 @@ def order_workflow_action(request, pk, action):
         messages.success(request, f"भ्रमण आदेश #{order.id} को आर्थिक प्रशासन फछ्र्यौट सम्पन्न भयो।")
 
     elif action == 'register':
-        if not (admin_mode or attendance_mode):
+        if not (admin_mode or register_mode or finance_mode):
             messages.error(request, "भ्रमण आदेश दर्ता गरी आदेश नं. कायम गर्ने अधिकार दर्ता/चलानी फाँटलाई मात्र छ।")
             return redirect(f'/order/{order.id}/')
         if order.status not in ['APPROVED', 'FINANCE_CLEARED']:

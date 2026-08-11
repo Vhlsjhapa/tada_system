@@ -584,11 +584,26 @@
 
                 <div class="form-group">
                     <label for="role">भूमिका (Role / Permissions) *</label>
-                    <select id="role" name="role" required>
-                        <option value="user">👤 कर्मचारी (Regular User) - आफ्नो विवरण मात्र</option>
-                        <option value="finance">💼 आर्थिक प्रशासन (Finance) - अभिलेख खाता पहुँच</option>
-                        <option value="admin">⭐ व्यवस्थापक (Admin) - पूर्ण अधिकार</option>
-                    </select>
+                    <div style="display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc;">
+                        <label style="font-weight: normal; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" name="roles" value="admin" id="role_admin"> ⭐ व्यवस्थापक (Admin) - सम्पूर्ण अधिकार
+                        </label>
+                        <label style="font-weight: normal; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" name="roles" value="approver" id="role_approver"> ✍️ स्वीकृतकर्ता (Approver) - आदेश स्वीकृत गर्ने
+                        </label>
+                        <label style="font-weight: normal; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" name="roles" value="finance" id="role_finance"> 💼 आर्थिक प्रशासन (Finance) - अभिलेख खाता पहुँच
+                        </label>
+                        <label style="font-weight: normal; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" name="roles" value="register" id="role_register"> 🔢 दर्ता शाखा (Register) - आदेश नम्बर कायम गर्ने
+                        </label>
+                        <label style="font-weight: normal; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" name="roles" value="attendance" id="role_attendance"> 📅 हाजिरी फाँट (Attendance) - हाजिरीमा जनाउने
+                        </label>
+                        <div style="font-size: 11px; color: #64748b; margin-top: 4px;">
+                            नोट: कुनै पनि भूमिका नछान्दा पनि "नर्मल युजर" को रूपमा आफ्ना आदेशहरू भर्न सकिनेछ।
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -638,12 +653,22 @@
                         <tr>
                             <td><b>{{ u.username }}</b></td>
                             <td>{{ u.get_full_name|default:"-" }}</td>
-                            <td>
+                            <td style="display:flex; flex-wrap:wrap; gap:4px;">
                                 {% if u.is_superuser or u.is_staff %}
                                     <span class="badge badge-admin">⭐ Admin</span>
-                                {% elif "Finance" in u.groups.all|join:"," or "आर्थिक प्रशासन" in u.groups.all|join:"," or "लेखा" in u.groups.all|join:"," %}
-                                    <span class="badge" style="background:#ede9fe; color:#6d28d9; border:1px solid #c4b5fd;">💼 Finance</span>
-                                {% else %}
+                                {% endif %}
+                                {% for g in u.groups.all %}
+                                    {% if g.name == 'Finance' %}
+                                        <span class="badge" style="background:#ede9fe; color:#6d28d9; border:1px solid #c4b5fd;">💼 Finance</span>
+                                    {% elif g.name == 'Approver' %}
+                                        <span class="badge" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a;">✍️ Approver</span>
+                                    {% elif g.name == 'Register' %}
+                                        <span class="badge" style="background:#dbeafe; color:#1d4ed8; border:1px solid #bfdbfe;">🔢 Register</span>
+                                    {% elif g.name == 'Attendance' %}
+                                        <span class="badge" style="background:#ccfbf1; color:#0f766e; border:1px solid #99f6e4;">📅 Attendance</span>
+                                    {% endif %}
+                                {% endfor %}
+                                {% if not u.is_superuser and not u.is_staff and not u.groups.exists %}
                                     <span class="badge badge-user">👤 User</span>
                                 {% endif %}
                             </td>
@@ -662,7 +687,7 @@
                                 {% endif %}
                             </td>
                             <td style="text-align:center; white-space:nowrap;">
-                                <button type="button" class="btn-action btn-edit" onclick="editUser({{ u.id }}, '{{ u.username|escapejs }}', '{{ u.first_name|escapejs }}', '{{ u.last_name|escapejs }}', '{{ u.email|escapejs }}', '{% if u.is_staff or u.is_superuser %}admin{% elif "Finance" in u.groups.all|join:"," or "आर्थिक प्रशासन" in u.groups.all|join:"," or "लेखा" in u.groups.all|join:"," %}finance{% else %}user{% endif %}', '{{ u.employee_profile.id|default:"" }}', {{ u.is_active|yesno:'true,false' }})">
+                                <button type="button" class="btn-action btn-edit" onclick="editUser({{ u.id }}, '{{ u.username|escapejs }}', '{{ u.first_name|escapejs }}', '{{ u.last_name|escapejs }}', '{{ u.email|escapejs }}', '{% if u.is_staff %}admin,{% endif %}{% for g in u.groups.all %}{{ g.name }},{% endfor %}', '{{ u.employee_profile.id|default:"" }}', {{ u.is_active|yesno:'true,false' }})">
                                     ✏️ सम्पादन
                                 </button>
 
@@ -680,14 +705,6 @@
                                     </button>
                                 </form>
 
-                                <form method="POST" action="/users/" style="display:inline;" onsubmit="return confirm('के तपाईं साँच्चै यो युजर खाता हटाउन चाहनुहुन्छ?');">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="delete">
-                                    <input type="hidden" name="user_id" value="{{ u.id }}">
-                                    <button type="submit" class="btn-action btn-del" title="हटाउनुहोस्">
-                                        🗑️
-                                    </button>
-                                </form>
                                 {% endif %}
                             </td>
                         </tr>
@@ -730,7 +747,17 @@
         document.getElementById('firstName').value = firstName;
         document.getElementById('lastName').value = lastName;
         document.getElementById('email').value = email;
-        document.getElementById('role').value = role;
+        
+        // Reset and check roles
+        document.querySelectorAll('input[name="roles"]').forEach(cb => cb.checked = false);
+        const roleArray = role.split(',').map(r => r.trim().toLowerCase());
+        roleArray.forEach(r => {
+            if (r) {
+                let cb = document.getElementById('role_' + r);
+                if (cb) cb.checked = true;
+            }
+        });
+
         document.getElementById('empLink').value = empId;
         document.getElementById('userActive').checked = isActive;
 
