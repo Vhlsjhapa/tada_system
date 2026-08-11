@@ -578,7 +578,7 @@
 
                 <div class="form-group" id="pwdGroup">
                     <label for="password">पासवर्ड (Password) <span id="pwdRequired">*</span></label>
-                    <input type="password" id="password" name="password" placeholder="••••••••">
+                    <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="new-password">
                     <small id="pwdHint" style="display:none; font-size:11px; color:#64748b;">(पासवर्ड फेर्न नपरेमा खाली छोड्नुहोस्)</small>
                 </div>
 
@@ -764,6 +764,7 @@
         document.getElementById('pwdRequired').innerText = '';
         document.getElementById('pwdHint').style.display = 'block';
         document.getElementById('password').required = false;
+        document.getElementById('password').value = ''; // Clear password field on edit
 
         document.getElementById('formHeader').innerText = '✏️ प्रयोगकर्ता विवरण सम्पादन';
         document.getElementById('editBadge').style.display = 'inline-block';
