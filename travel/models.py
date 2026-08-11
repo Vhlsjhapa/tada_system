@@ -14,12 +14,16 @@ from .bs_calendar import (
 
 def normalize_nepali_fiscal_year(fy_str):
     if not fy_str:
-        return get_fiscal_year_from_bs_date(get_today_bs()) or "२०८३/८४"
+        return get_fiscal_year_from_bs_date(get_today_bs()) or "२०८३/०८४"
     eng = to_english_digits(str(fy_str).strip())
     eng = eng.replace('-', '/').replace('.', '/')
     parts = eng.split('/')
     if len(parts) >= 2:
-        return f"{to_nepali_digits(parts[0])}/{to_nepali_digits(parts[1])}"
+        start_y = parts[0]
+        end_y = parts[1]
+        if len(end_y) == 2:
+            end_y = "0" + end_y
+        return f"{to_nepali_digits(start_y)}/{to_nepali_digits(end_y)}"
     return str(fy_str).strip()
 
 class Office(models.Model):

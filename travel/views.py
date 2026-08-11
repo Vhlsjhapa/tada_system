@@ -189,8 +189,8 @@ def user_can_access_order(user, order):
 
 
 def get_all_fiscal_years():
-    """Returns a clean list containing requested fiscal years (२०८३/८४, २०८४/८५, २०८२/८३) plus any existing DB fiscal years if present."""
-    cur_fy = get_fiscal_year_from_bs_date(get_today_bs()) or '२०८३/८४'
+    """Returns a clean list containing requested fiscal years (२०८३/०८४, २०८४/०८५, २०८२/०८३) plus any existing DB fiscal years if present."""
+    cur_fy = normalize_nepali_fiscal_year(get_fiscal_year_from_bs_date(get_today_bs()) or '२०८३/०८४')
     STANDARD_FISCAL_YEARS = [
         cur_fy,
         '२०८१/०८२',
@@ -199,12 +199,13 @@ def get_all_fiscal_years():
         '२०८४/०८५',
         '२०८५/०८६',
     ]
-    db_fys = [fy.strip() for fy in TravelOrder.objects.values_list('fiscal_year', flat=True).distinct() if fy and fy.strip()]
-    all_fys_set = set(STANDARD_FISCAL_YEARS + db_fys)
+    db_fys = [normalize_nepali_fiscal_year(fy) for fy in TravelOrder.objects.values_list('fiscal_year', flat=True).distinct() if fy and fy.strip()]
+    all_fys_set = set([normalize_nepali_fiscal_year(fy) for fy in STANDARD_FISCAL_YEARS] + db_fys)
     ordered_fys = [cur_fy]
     for candidate in ['२०८१/०८२', '२०८२/०८३', '२०८३/०८४', '२०८४/०८५', '२०८५/०८६']:
-        if candidate not in ordered_fys:
-            ordered_fys.append(candidate)
+        cand_norm = normalize_nepali_fiscal_year(candidate)
+        if cand_norm not in ordered_fys:
+            ordered_fys.append(cand_norm)
     for fy in sorted(list(all_fys_set)):
         if fy not in ordered_fys:
             ordered_fys.append(fy)
@@ -216,7 +217,8 @@ def get_default_date_for_fy(request, today_bs=None):
     if not today_bs:
         today_bs = get_today_bs()
     session_fy = get_active_fiscal_year(request)
-    default_fy = session_fy or get_fiscal_year_from_bs_date(today_bs) or "२०८३/८४"
+    default_fy = session_fy or get_fiscal_year_from_bs_date(today_bs) or "२०८३/०८४"
+
     
     if default_fy == get_fiscal_year_from_bs_date(today_bs):
         default_date = today_bs

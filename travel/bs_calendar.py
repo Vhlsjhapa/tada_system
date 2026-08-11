@@ -458,11 +458,11 @@ def get_fiscal_year_from_bs_date(bs_date_str):
             if 2000 <= y <= 2100 and 1 <= m <= 12:
                 if m >= 4:
                     start_y = y
-                    end_y = (y + 1) % 100
+                    end_y = (y + 1) % 1000
                 else:
                     start_y = y - 1
-                    end_y = y % 100
-                end_y_str = f"{end_y:02d}"
+                    end_y = y % 1000
+                end_y_str = f"{end_y:03d}"
                 return f"{to_nepali_digits(start_y)}/{to_nepali_digits(end_y_str)}"
         except (ValueError, TypeError):
             pass
