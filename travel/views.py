@@ -2003,13 +2003,10 @@ def edit_report_view(request, pk):
                 'report': report,
             })
 
-        # Update report
         report.report_reg_no = request.POST.get('report_reg_no', '').strip()
         report.report_date = request.POST.get('report_date')
         report.submitted_by = request.POST.get('submitted_by')
         report.submitted_designation = request.POST.get('submitted_designation')
-        report.approved_by = request.POST.get('approved_by')
-        report.approved_designation = request.POST.get('approved_designation')
         report.save()
 
         # Recreate activities
@@ -2050,8 +2047,6 @@ def edit_report_view(request, pk):
         'report_date': report.report_date,
         'submitted_by': report.submitted_by,
         'submitted_designation': report.submitted_designation,
-        'approved_by': report.approved_by,
-        'approved_designation': report.approved_designation,
     }
     return render(request, 'report_form.html', {
         'orders': orders,
