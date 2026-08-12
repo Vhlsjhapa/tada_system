@@ -1071,6 +1071,10 @@
                             <td>
                                 <a href="/bill/{{ b.pk }}/" target="_blank" class="btn-table btn-print-bill">🖨️ म.ले.प. २२४</a>
                                 <a href="/bill/{{ b.pk }}/nivedan/" target="_blank" class="btn-table btn-print-nivedan">📝 भुक्तानी निवेदन</a>
+                                {% if is_admin %}
+                                    <a href="/bill/{{ b.pk }}/edit/" class="btn-table" style="background:#fef3c7; color:#92400e; border:1px solid #fde68a;">✏️ सच्याउनुहोस्</a>
+                                    <a href="/bill/{{ b.pk }}/delete/" class="btn-table" onclick="return confirm('के तपाईं साँच्चै यो बिल मेटाउन चाहनुहुन्छ?');" style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; font-size:11.5px;">🗑️ मेटाउनुहोस्</a>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -1102,7 +1106,7 @@
                         <th>स्थान</th>
                         <th>पेश मिति</th>
                         <th>दर्ता नं.</th>
-                        <th>प्रिन्ट</th>
+                        <th style="min-width:240px;">प्रिन्ट तथा कार्य</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -1117,6 +1121,10 @@
                             <td>{{ rep.report_reg_no|default:"-" }}</td>
                             <td>
                                 <a href="/report/{{ rep.pk }}/" target="_blank" class="btn-table btn-print-report">🖨️ प्रतिवेदन प्रिन्ट</a>
+                                {% if is_admin %}
+                                    <a href="/report/{{ rep.pk }}/edit/" class="btn-table" style="background:#fef3c7; color:#92400e; border:1px solid #fde68a;">✏️ सच्याउनुहोस्</a>
+                                    <a href="/report/{{ rep.pk }}/delete/" class="btn-table" onclick="return confirm('के तपाईं साँच्चै यो प्रतिवेदन मेटाउन चाहनुहुन्छ?');" style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; font-size:11.5px;">🗑️ मेटाउनुहोस्</a>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
