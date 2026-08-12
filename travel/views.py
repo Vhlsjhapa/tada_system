@@ -1776,9 +1776,26 @@ def report_form_view(request):
         if existing_report:
             return redirect(f'/report/{existing_report.id}/')
             
+        report_date = request.POST.get('report_date')
+        
+        # Validation: Report date must not be earlier than travel end date
+        if report_date and order.end_date:
+            r_date_clean = report_date.replace('-', '/')
+            e_date_clean = order.end_date.replace('-', '/')
+            if r_date_clean < e_date_clean:
+                return render(request, 'report_form.html', {
+                    'orders': orders,
+                    'error_message': f'प्रतिवेदन पेश गरेको मिति ({report_date}) भ्रमण समाप्त मिति ({order.end_date}) भन्दा अगाडि हुन सक्दैन।',
+                    'preselected_order_id': order_id,
+                    'is_admin': admin_mode,
+                    'today_bs': get_today_bs(),
+                    'default_date': default_date,
+                    'form_data': request.POST
+                })
+
         report = TravelReport.objects.create(
             travel_order=order,
-            report_date=request.POST.get('report_date'),
+            report_date=report_date,
             report_reg_no=request.POST.get('report_reg_no'),
             key_activities=request.POST.get('key_activities'),
             achievements=request.POST.get('achievements'),
@@ -2029,8 +2046,30 @@ def edit_report_view(request, pk):
     default_fy, default_date = get_default_date_for_fy(request)
 
     if request.method == 'POST':
+        report_date = request.POST.get('report_date')
+        
+        # Validation: Report date must not be earlier than travel end date
+        if report_date and order.end_date:
+            r_date_clean = report_date.replace('-', '/')
+            e_date_clean = order.end_date.replace('-', '/')
+            if r_date_clean < e_date_clean:
+                messages.error(request, f"प्रतिवेदन पेश गरेको मिति ({report_date}) भ्रमण समाप्त मिति ({order.end_date}) भन्दा अगाडि हुन सक्दैन।")
+                # Re-render with submitted data
+                form_data = request.POST.dict()
+                form_data['travel_order'] = order.id
+                return render(request, 'report_form.html', {
+                    'orders': orders,
+                    'form_data': form_data,
+                    'preselected_order_id': order.id,
+                    'is_admin': admin_mode,
+                    'today_bs': get_today_bs(),
+                    'default_date': default_date,
+                    'is_edit': True,
+                    'report': report,
+                })
+
         report.report_reg_no = request.POST.get('report_reg_no', '').strip()
-        report.report_date = request.POST.get('report_date')
+        report.report_date = report_date
         report.submitted_by = request.POST.get('submitted_by')
         report.submitted_designation = request.POST.get('submitted_designation')
         

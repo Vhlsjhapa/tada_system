@@ -202,6 +202,7 @@
                     const subByName = document.getElementById('id_submitted_by');
                     const subByDesig = document.getElementById('id_submitted_designation');
                     const repRegNo = document.getElementById('id_report_reg_no');
+                    const repDate = document.querySelector('input[name="report_date"]');
                     if (subByName && (!subByName.value || subByName.value === '')) {
                         subByName.value = data.person || '';
                     }
@@ -210,6 +211,10 @@
                     }
                     if (repRegNo && data.report_reg_no && (!repRegNo.value || repRegNo.value === '')) {
                         repRegNo.value = data.report_reg_no;
+                    }
+                    // Auto-fill report date with the travel end date
+                    if (repDate && data.end_date && '{{ is_edit }}' !== 'True') {
+                        repDate.value = data.end_date;
                     }
                 }
             })
