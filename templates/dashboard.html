@@ -1007,12 +1007,18 @@
                                 {% if ord.bill %}
                                     <a href="/bill/{{ ord.bill.pk }}/" target="_blank" class="btn-table btn-print-bill">🖨️ बिल (म.ले.प. २२४)</a>
                                     <a href="/bill/{{ ord.bill.pk }}/nivedan/" target="_blank" class="btn-table btn-print-nivedan" style="background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0;">📝 भुक्तानी निवेदन</a>
+                                    {% if is_admin %}
+                                        <a href="/bill/{{ ord.bill.pk }}/edit/" class="btn-table" style="background:#fef3c7; color:#92400e; border:1px solid #fde68a;">✏️ बिल सच्याउनुहोस्</a>
+                                    {% endif %}
                                 {% else %}
                                     <a href="/bill/new/?order_id={{ ord.pk }}" class="btn-table btn-add-action">➕ बिल भर्नुहोस्</a>
                                 {% endif %}
 
                                 {% if ord.report %}
                                     <a href="/report/{{ ord.report.pk }}/" target="_blank" class="btn-table btn-print-report">🖨️ प्रतिवेदन</a>
+                                    {% if is_admin %}
+                                        <a href="/report/{{ ord.report.pk }}/edit/" class="btn-table" style="background:#fef3c7; color:#92400e; border:1px solid #fde68a;">✏️ प्रतिवेदन सच्याउनुहोस्</a>
+                                    {% endif %}
                                 {% else %}
                                     <a href="/report/new/?order_id={{ ord.pk }}" class="btn-table" style="background:#f3e8ff; color:#7e22ce; border:1px dashed #a855f7;">➕ प्रतिवेदन</a>
                                 {% endif %}

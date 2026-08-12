@@ -165,9 +165,12 @@ def get_user_accessible_orders(user):
     if is_admin(user):
         return TravelOrder.objects.all()
     emp = getattr(user, 'employee_profile', None)
+    
+    q_conditions = Q(created_by=user) | Q(employee__managed_by=user)
     if emp:
-        return TravelOrder.objects.filter(Q(created_by=user) | Q(employee=emp) | Q(employee__user=user))
-    return TravelOrder.objects.filter(created_by=user)
+        q_conditions |= Q(employee=emp) | Q(employee__user=user)
+        
+    return TravelOrder.objects.filter(q_conditions)
 
 
 def get_user_employee(user):
@@ -679,6 +682,7 @@ def manage_users(request):
             password = request.POST.get('password', '').strip()
             roles = request.POST.getlist('roles')
             employee_id = request.POST.get('employee_id')
+            managed_emp_ids = request.POST.getlist('managed_employees')
             is_active = bool(request.POST.get('is_active', True))
             
             is_staff_val = ('admin' in roles)
@@ -732,6 +736,20 @@ def manage_users(request):
                     else:
                         Employee.objects.filter(user=target_user).update(user=None)
                         
+                    if managed_emp_ids:
+                        target_user.managed_employees.exclude(id__in=managed_emp_ids).update(managed_by=None)
+                        for emp_id in managed_emp_ids:
+                            emp = Employee.objects.filter(id=emp_id).first()
+                            if emp:
+                                if emp.user:
+                                    emp.user.is_active = False
+                                    emp.user.save(update_fields=['is_active'])
+                                    emp.user = None
+                                emp.managed_by = target_user
+                                emp.save(update_fields=['user', 'managed_by'])
+                    else:
+                        target_user.managed_employees.update(managed_by=None)
+                        
                     messages.success(request, f"प्रयोगकर्ता '{target_user.username}' को विवरण अद्यावधिक गरियो।")
                     return redirect('/users/')
             else:
@@ -760,10 +778,21 @@ def manage_users(request):
                         if emp:
                             emp.user = new_user
                             emp.save(update_fields=['user'])
+                            
+                    if managed_emp_ids:
+                        for emp_id in managed_emp_ids:
+                            emp = Employee.objects.filter(id=emp_id).first()
+                            if emp:
+                                if emp.user:
+                                    emp.user.is_active = False
+                                    emp.user.save(update_fields=['is_active'])
+                                    emp.user = None
+                                emp.managed_by = new_user
+                                emp.save(update_fields=['user', 'managed_by'])
                     messages.success(request, f"नयाँ प्रयोगकर्ता '{new_user.username}' सफलतापूर्वक सिर्जना गरियो।")
                     return redirect('/users/')
 
-    users_list = User.objects.all().prefetch_related('groups').order_by('-is_superuser', '-is_staff', 'username')
+    users_list = User.objects.all().prefetch_related('groups', 'managed_employees').order_by('-is_superuser', '-is_staff', 'username')
     employees = Employee.objects.all().order_by('name')
     
     return render(request, 'users.html', {
@@ -1242,9 +1271,11 @@ def order_form_view(request):
     if admin_mode:
         employees = Employee.objects.filter(is_active=True).select_related('office_ref')
     else:
+        employees = []
         if user_emp:
-            employees = [user_emp]
-        else:
+            employees.append(user_emp)
+        employees.extend(user.managed_employees.filter(is_active=True).select_related('office_ref'))
+        if not employees:
             employees = Employee.objects.filter(is_active=True).select_related('office_ref')
             
     offices = Office.objects.all().order_by('-is_default', 'name')
@@ -1279,8 +1310,14 @@ def order_form_view(request):
             })
 
         employee_id = request.POST.get('employee')
-        if not admin_mode and user_emp:
-            emp = user_emp
+        if not admin_mode:
+            emp = None
+            if employee_id:
+                requested_emp = Employee.objects.filter(id=employee_id).first()
+                if requested_emp and (requested_emp == user_emp or requested_emp.managed_by == user):
+                    emp = requested_emp
+            if not emp:
+                emp = user_emp
         else:
             emp = Employee.objects.filter(id=employee_id).first() if employee_id else None
             
@@ -1360,7 +1397,12 @@ def edit_order_view(request, pk):
     if admin_mode:
         employees = Employee.objects.filter(is_active=True).select_related('office_ref')
     else:
-        employees = [user_emp] if user_emp else [order.employee] if order.employee else []
+        employees = []
+        if user_emp:
+            employees.append(user_emp)
+        employees.extend(user.managed_employees.filter(is_active=True).select_related('office_ref'))
+        if order.employee and order.employee not in employees:
+            employees.append(order.employee)
         
     offices = Office.objects.all().order_by('-is_default', 'name')
     default_office = order.office_ref or Office.get_default_office()
@@ -1391,8 +1433,14 @@ def edit_order_view(request, pk):
             })
 
         employee_id = request.POST.get('employee')
-        if not admin_mode and user_emp:
-            emp = user_emp
+        if not admin_mode:
+            emp = None
+            if employee_id:
+                requested_emp = Employee.objects.filter(id=employee_id).first()
+                if requested_emp and (requested_emp == user_emp or requested_emp.managed_by == user):
+                    emp = requested_emp
+            if not emp:
+                emp = user_emp
         else:
             emp = Employee.objects.filter(id=employee_id).first() if employee_id else None
             

@@ -608,8 +608,17 @@
 
                 <div class="form-group">
                     <label for="employee_id">सम्बन्धित कर्मचारी प्रोफाइल (Link Employee)</label>
-                    <select id="empLink" name="employee_id">
+                    <select id="empLink" name="employee_id" onchange="toggleManagedEmployees()">
                         <option value="">-- कुनै कर्मचारी नजोड्ने --</option>
+                        {% for emp in employees %}
+                            <option value="{{ emp.id }}">{{ emp.name }} ({{ emp.code_no }} - {{ emp.designation }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="managedEmployees">व्यवस्थापन गर्न पाउने कर्मचारीहरू (Managed Employees) <br><small style="font-weight:normal; color:#64748b;">(बहु-छनौट गर्न Ctrl थिचेर छान्नुहोस्।)</small></label>
+                    <select id="managedEmployees" name="managed_employees" multiple size="5" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px;" onchange="toggleUserAccount()">
                         {% for emp in employees %}
                             <option value="{{ emp.id }}">{{ emp.name }} ({{ emp.code_no }} - {{ emp.designation }})</option>
                         {% endfor %}
@@ -674,9 +683,17 @@
                             </td>
                             <td style="font-size:12px;">
                                 {% if u.employee_profile %}
-                                    <b>{{ u.employee_profile.name }}</b> ({{ u.employee_profile.code_no }})
+                                    <div style="margin-bottom: 4px;"><b>{{ u.employee_profile.name }}</b> ({{ u.employee_profile.code_no }})</div>
                                 {% else %}
-                                    <span style="color:#94a3b8;">नजोडिएको</span>
+                                    <div style="color:#94a3b8; margin-bottom: 4px;">नजोडिएको</div>
+                                {% endif %}
+                                {% if u.managed_employees.all %}
+                                    <div style="font-size: 11px; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; display: inline-block;">
+                                        <b>प्रबन्धित:</b> 
+                                        {% for me in u.managed_employees.all %}
+                                            {{ me.name }}{% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                             </td>
                             <td>
@@ -687,9 +704,12 @@
                                 {% endif %}
                             </td>
                             <td style="text-align:center; white-space:nowrap;">
-                                <button type="button" class="btn-action btn-edit" onclick="editUser({{ u.id }}, '{{ u.username|escapejs }}', '{{ u.first_name|escapejs }}', '{{ u.last_name|escapejs }}', '{{ u.email|escapejs }}', '{% if u.is_staff %}admin,{% endif %}{% for g in u.groups.all %}{{ g.name }},{% endfor %}', '{{ u.employee_profile.id|default:"" }}', {{ u.is_active|yesno:'true,false' }})">
-                                    ✏️ सम्पादन
+                                {% if not u.is_superuser %}
+                                <button type="button" class="btn-action btn-edit" title="सम्पादन" 
+                                    onclick="editUser('{{ u.id }}', '{{ u.username|escapejs }}', '{{ u.first_name|escapejs }}', '{{ u.last_name|escapejs }}', '{{ u.email|escapejs }}', '{% for g in u.groups.all %}{{ g.name }},{% endfor %}{% if u.is_staff and not u.is_superuser %}admin{% endif %}', '{{ u.employee_profile.id|default:'' }}', '{{ u.is_active|yesno:'true,false' }}', [{% for me in u.managed_employees.all %}'{{ me.id }}'{% if not forloop.last %},{% endif %}{% endfor %}])">
+                                    ✏️
                                 </button>
+                                {% endif %}
 
                                 <button type="button" class="btn-action btn-pwd" onclick="openResetModal({{ u.id }}, '{{ u.username|escapejs }}')">
                                     🔑 पासवर्ड
@@ -741,7 +761,29 @@
 </div>
 
 <script>
-    function editUser(id, username, firstName, lastName, email, role, empId, isActive) {
+    function toggleManagedEmployees() {
+        const empLink = document.getElementById('empLink');
+        const managedEmployees = document.getElementById('managedEmployees');
+        if (empLink.value) {
+            managedEmployees.selectedIndex = -1;
+            managedEmployees.disabled = true;
+        } else {
+            managedEmployees.disabled = false;
+        }
+    }
+
+    function toggleUserAccount() {
+        const empLink = document.getElementById('empLink');
+        const managedEmployees = document.getElementById('managedEmployees');
+        if (managedEmployees.selectedOptions.length > 0) {
+            empLink.value = '';
+            empLink.disabled = true;
+        } else {
+            empLink.disabled = false;
+        }
+    }
+
+    function editUser(id, username, firstName, lastName, email, role, empId, isActive, managedEmpIds) {
         document.getElementById('userId').value = id;
         document.getElementById('username').value = username;
         document.getElementById('firstName').value = firstName;

@@ -142,6 +142,14 @@ class Employee(models.Model):
         related_name='employee_profile',
         verbose_name="युजर खाता (User Account)"
     )
+    managed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='managed_employees',
+        verbose_name="व्यवस्थापन गर्ने युजर (Managed By)"
+    )
     office_ref = models.ForeignKey(
         Office, 
         on_delete=models.SET_NULL, 
