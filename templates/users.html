@@ -608,7 +608,7 @@
 
                 <div class="form-group">
                     <label for="employee_id">सम्बन्धित कर्मचारी प्रोफाइल (Link Employee)</label>
-                    <select id="empLink" name="employee_id" onchange="toggleManagedEmployees()">
+                    <select id="empLink" name="employee_id">
                         <option value="">-- कुनै कर्मचारी नजोड्ने --</option>
                         {% for emp in employees %}
                             <option value="{{ emp.id }}">{{ emp.name }} ({{ emp.code_no }} - {{ emp.designation }})</option>
@@ -618,7 +618,7 @@
                 
                 <div class="form-group">
                     <label for="managedEmployees">व्यवस्थापन गर्न पाउने कर्मचारीहरू (Managed Employees) <br><small style="font-weight:normal; color:#64748b;">(बहु-छनौट गर्न Ctrl थिचेर छान्नुहोस्।)</small></label>
-                    <select id="managedEmployees" name="managed_employees" multiple size="5" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px;" onchange="toggleUserAccount()">
+                    <select id="managedEmployees" name="managed_employees" multiple size="5" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
                         {% for emp in employees %}
                             <option value="{{ emp.id }}">{{ emp.name }} ({{ emp.code_no }} - {{ emp.designation }})</option>
                         {% endfor %}
@@ -761,28 +761,6 @@
 </div>
 
 <script>
-    function toggleManagedEmployees() {
-        const empLink = document.getElementById('empLink');
-        const managedEmployees = document.getElementById('managedEmployees');
-        if (empLink.value) {
-            managedEmployees.selectedIndex = -1;
-            managedEmployees.disabled = true;
-        } else {
-            managedEmployees.disabled = false;
-        }
-    }
-
-    function toggleUserAccount() {
-        const empLink = document.getElementById('empLink');
-        const managedEmployees = document.getElementById('managedEmployees');
-        if (managedEmployees.selectedOptions.length > 0) {
-            empLink.value = '';
-            empLink.disabled = true;
-        } else {
-            empLink.disabled = false;
-        }
-    }
-
     function editUser(id, username, firstName, lastName, email, role, empId, isActive, managedEmpIds) {
         document.getElementById('userId').value = id;
         document.getElementById('username').value = username;
@@ -800,8 +778,18 @@
             }
         });
 
-        document.getElementById('empLink').value = empId;
-        document.getElementById('userActive').checked = isActive;
+        if (empId) {
+            document.getElementById('empLink').value = empId;
+        } else {
+            document.getElementById('empLink').value = '';
+        }
+        
+        const managedSelect = document.getElementById('managedEmployees');
+        for (let i = 0; i < managedSelect.options.length; i++) {
+            managedSelect.options[i].selected = (managedEmpIds || []).includes(managedSelect.options[i].value);
+        }
+        
+        document.getElementById('userActive').checked = (isActive === 'true');
 
         document.getElementById('pwdRequired').innerText = '';
         document.getElementById('pwdHint').style.display = 'block';
