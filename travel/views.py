@@ -1988,54 +1988,17 @@ def edit_report_view(request, pk):
     default_fy, default_date = get_default_date_for_fy(request)
 
     if request.method == 'POST':
-        # 1. Validate dates against order bounds
-        is_items_valid, items_err = validate_travel_report_item_dates(request.POST, order.start_date, order.end_date)
-        if not is_items_valid:
-            return render(request, 'report_form.html', {
-                'orders': orders,
-                'error_message': items_err,
-                'form_data': request.POST,
-                'preselected_order_id': order.id,
-                'is_admin': admin_mode,
-                'today_bs': get_today_bs(),
-                'default_date': default_date,
-                'is_edit': True,
-                'report': report,
-            })
-
         report.report_reg_no = request.POST.get('report_reg_no', '').strip()
         report.report_date = request.POST.get('report_date')
         report.submitted_by = request.POST.get('submitted_by')
         report.submitted_designation = request.POST.get('submitted_designation')
-        report.save()
-
-        # Recreate activities
-        report.activities.all().delete()
         
-        row_indices = request.POST.getlist('row_index')
-        if not row_indices:
-            act_dates = request.POST.getlist('activity_date[]') or request.POST.getlist('activity_date')
-            act_details = request.POST.getlist('activity_details[]') or request.POST.getlist('activity_details')
-            remarks_list = request.POST.getlist('remarks[]') or request.POST.getlist('remarks')
-            
-            for i in range(len(act_dates)):
-                if act_dates[i].strip():
-                    TravelReportItem.objects.create(
-                        travel_report=report,
-                        activity_date=act_dates[i].strip(),
-                        activity_details=act_details[i].strip() if i < len(act_details) else '',
-                        remarks=remarks_list[i].strip() if i < len(remarks_list) else ''
-                    )
-        else:
-            for idx in row_indices:
-                adate = request.POST.get(f'act_date_{idx}', '').strip()
-                if adate:
-                    TravelReportItem.objects.create(
-                        travel_report=report,
-                        activity_date=adate,
-                        activity_details=request.POST.get(f'act_details_{idx}', '').strip(),
-                        remarks=request.POST.get(f'remarks_{idx}', '').strip()
-                    )
+        report.key_activities = request.POST.get('key_activities')
+        report.achievements = request.POST.get('achievements')
+        report.challenges = request.POST.get('challenges')
+        report.recommendations = request.POST.get('recommendations')
+        
+        report.save()
 
         messages.success(request, f"आदेश नं. {order.order_number} को प्रतिवेदन सफलतापूर्वक सम्पादन भयो।")
         return redirect(f'/report/{report.id}/')
@@ -2047,6 +2010,10 @@ def edit_report_view(request, pk):
         'report_date': report.report_date,
         'submitted_by': report.submitted_by,
         'submitted_designation': report.submitted_designation,
+        'key_activities': report.key_activities,
+        'achievements': report.achievements,
+        'challenges': report.challenges,
+        'recommendations': report.recommendations,
     }
     return render(request, 'report_form.html', {
         'orders': orders,
@@ -2057,5 +2024,4 @@ def edit_report_view(request, pk):
         'default_date': default_date,
         'is_edit': True,
         'report': report,
-        'report_items': report.activities.all().order_by('id')
     })
