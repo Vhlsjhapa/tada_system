@@ -704,12 +704,10 @@
                                 {% endif %}
                             </td>
                             <td style="text-align:center; white-space:nowrap;">
-                                {% if not u.is_superuser %}
                                 <button type="button" class="btn-action btn-edit" title="सम्पादन" 
                                     onclick="editUser('{{ u.id }}', '{{ u.username|escapejs }}', '{{ u.first_name|escapejs }}', '{{ u.last_name|escapejs }}', '{{ u.email|escapejs }}', '{% for g in u.groups.all %}{{ g.name }},{% endfor %}{% if u.is_staff and not u.is_superuser %}admin{% endif %}', '{{ u.employee_profile.id|default:'' }}', '{{ u.is_active|yesno:'true,false' }}', [{% for me in u.managed_employees.all %}'{{ me.id }}'{% if not forloop.last %},{% endif %}{% endfor %}])">
                                     ✏️
                                 </button>
-                                {% endif %}
 
                                 <button type="button" class="btn-action btn-pwd" onclick="openResetModal({{ u.id }}, '{{ u.username|escapejs }}')">
                                     🔑 पासवर्ड
