@@ -99,7 +99,7 @@
 <div class="form-container">
     <div class="form-header">
         <div>
-            <h2>📝 नयाँ भ्रमण सम्पन्न प्रतिवेदन (Travel Completion Report)</h2>
+            <h2>📝 {% if is_edit %}भ्रमण सम्पन्न प्रतिवेदन सच्याउनुहोस्{% else %}नयाँ भ्रमण सम्पन्न प्रतिवेदन{% endif %} (Travel Completion Report)</h2>
             <p style="font-size:12px; color:#64748b; margin-top:2px;">भ्रमण आदेश छान्नुहोस् र सम्पादित कार्य, उपलब्धि तथा सुझावहरू भर्नुहोस्</p>
         </div>
         <a href="/" style="color:#64748b; text-decoration:none; font-weight:600;">⬅️ फर्कनुहोस्</a>
@@ -118,7 +118,7 @@
     </div>
     {% endif %}
 
-    <form method="POST" action="/report/new/">
+    <form method="POST" action="{% if is_edit %}/report/{{ form_data.report_id }}/edit/{% else %}/report/new/{% endif %}">
         {% csrf_token %}
 
         <!-- १. सम्बन्धित भ्रमण आदेश -->
@@ -145,15 +145,15 @@
         <div class="form-grid">
             <div class="form-group">
                 <label>प्रतिवेदन दर्ता नं. (Report Reg No.)</label>
-                <input type="text" name="report_reg_no" id="id_report_reg_no" placeholder="जस्तै: १०४ (आदेशबाट स्वतः लिंक हुने)" {% if not orders %}disabled{% endif %}>
+                <input type="text" name="report_reg_no" id="id_report_reg_no" value="{% if form_data.report_reg_no %}{{ form_data.report_reg_no }}{% endif %}" placeholder="जस्तै: १०४ (आदेशबाट स्वतः लिंक हुने)" {% if not orders %}disabled{% endif %}>
             </div>
             <div class="form-group">
                 <label>प्रतिवेदन पेश गर्ने कर्मचारीको नामथर</label>
-                <input type="text" name="submitted_by" id="id_submitted_by" placeholder="कर्मचारीको नाम" {% if not orders %}disabled{% endif %}>
+                <input type="text" name="submitted_by" id="id_submitted_by" value="{% if form_data.submitted_by %}{{ form_data.submitted_by }}{% endif %}" placeholder="कर्मचारीको नाम" {% if not orders %}disabled{% endif %}>
             </div>
             <div class="form-group">
                 <label>पद</label>
-                <input type="text" name="submitted_designation" id="id_submitted_designation" placeholder="पद" {% if not orders %}disabled{% endif %}>
+                <input type="text" name="submitted_designation" id="id_submitted_designation" value="{% if form_data.submitted_designation %}{{ form_data.submitted_designation }}{% endif %}" placeholder="पद" {% if not orders %}disabled{% endif %}>
             </div>
         </div>
 
@@ -162,22 +162,22 @@
 
         <div class="form-group">
             <label>१. सम्पादित मुख्य कार्यहरूको संक्षिप्त विवरण (Key Activities) *</label>
-            <textarea name="key_activities" rows="3" required placeholder="भ्रमणका क्रममा सम्पादन गरिएका मुख्य-मुख्य कार्यहरू बुँदागत रूपमा लेख्नुहोस्..." {% if not orders %}disabled{% endif %}></textarea>
+            <textarea name="key_activities" rows="3" required placeholder="भ्रमणका क्रममा सम्पादन गरिएका मुख्य-मुख्य कार्यहरू बुँदागत रूपमा लेख्नुहोस्..." {% if not orders %}disabled{% endif %}>{% if form_data.key_activities %}{{ form_data.key_activities }}{% endif %}</textarea>
         </div>
 
         <div class="form-group">
             <label>२. हासिल भएका मुख्य उपलब्धिहरू (Key Achievements) *</label>
-            <textarea name="achievements" rows="3" required placeholder="भ्रमणबाट प्राप्त उपलब्धि, सेवा प्रवाह वा अनुगमन नतिजा..." {% if not orders %}disabled{% endif %}></textarea>
+            <textarea name="achievements" rows="3" required placeholder="भ्रमणबाट प्राप्त उपलब्धि, सेवा प्रवाह वा अनुगमन नतिजा..." {% if not orders %}disabled{% endif %}>{% if form_data.achievements %}{{ form_data.achievements }}{% endif %}</textarea>
         </div>
 
         <div class="form-group">
             <label>३. स्थलगत देखिएका समस्या तथा चुनौतीहरू (Challenges)</label>
-            <textarea name="challenges" rows="2" placeholder="स्थलगत अनुगमन वा काम गर्दा देखिएका समस्याहरू (यदि भएमा)..." {% if not orders %}disabled{% endif %}></textarea>
+            <textarea name="challenges" rows="2" placeholder="स्थलगत अनुगमन वा काम गर्दा देखिएका समस्याहरू (यदि भएमा)..." {% if not orders %}disabled{% endif %}>{% if form_data.challenges %}{{ form_data.challenges }}{% endif %}</textarea>
         </div>
 
         <div class="form-group" style="margin-bottom: 24px;">
             <label>४. निष्कर्ष तथा आगामी कार्यका लागि सुझावहरू (Recommendations) *</label>
-            <textarea name="recommendations" rows="3" required placeholder="कार्यालय तथा शाखालाई आवश्यक सिफारिस तथा सुझावहरू..." {% if not orders %}disabled{% endif %}></textarea>
+            <textarea name="recommendations" rows="3" required placeholder="कार्यालय तथा शाखालाई आवश्यक सिफारिस तथा सुझावहरू..." {% if not orders %}disabled{% endif %}>{% if form_data.recommendations %}{{ form_data.recommendations }}{% endif %}</textarea>
         </div>
 
         <div style="display:flex; justify-content:flex-end; gap:12px; align-items:center;">

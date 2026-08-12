@@ -47,7 +47,9 @@ urlpatterns = [
     path('order/<int:pk>/edit/', views.edit_order_view, name='edit_order'),
     path('order/<int:pk>/action/<str:action>/', views.order_workflow_action, name='order_workflow_action'),
     path('bill/new/', views.bill_form_view, name='create_bill'),
+    path('bill/<int:pk>/edit/', views.edit_bill_view, name='edit_bill'),
     path('report/new/', views.report_form_view, name='create_report'),
+    path('report/<int:pk>/edit/', views.edit_report_view, name='edit_report'),
     
     # JSON APIs for Auto-fill
     path('api/employee/<int:pk>/', views.api_employee_detail, name='api_employee_detail'),

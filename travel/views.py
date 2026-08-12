@@ -1352,8 +1352,8 @@ def edit_order_view(request, pk):
     user = request.user
     admin_mode = is_admin(user)
     
-    if not user_can_access_order(user, order):
-        messages.error(request, "तपाईंलाई यो भ्रमण आदेश सम्पादन गर्ने अनुमति छैन।")
+    if not admin_mode:
+        messages.error(request, "तपाईंलाई यो भ्रमण आदेश सम्पादन गर्ने अनुमति छैन। (केबल एडमिनले मात्र सम्पादन गर्न सक्छन्)")
         return redirect('/')
         
     user_emp = get_user_employee(user)
@@ -1762,3 +1762,305 @@ create_order = order_form_view
 create_bill = bill_form_view
 create_report = report_form_view
 travel_ledger_view = travel_register_view
+def edit_bill_view(request, pk):
+    bill = get_object_or_404(TravelBill, pk=pk)
+    user = request.user
+    admin_mode = is_admin(user)
+    
+    if not admin_mode:
+        messages.error(request, "तपाईंलाई यो बिल सम्पादन गर्ने अनुमति छैन। (केबल एडमिनले मात्र सम्पादन गर्न सक्छन्)")
+        return redirect('/')
+
+    order = bill.travel_order
+    orders = [order]  # For the dropdown
+    default_fy, default_date = get_default_date_for_fy(request)
+
+    if request.method == 'POST':
+        bill_date = request.POST.get('bill_date')
+        
+        # 1. Validate bill_date >= order.end_date
+        is_valid_date, date_err = validate_travel_bill_date(bill_date, order.end_date)
+        if not is_valid_date:
+            return render(request, 'bill_form.html', {
+                'orders': orders,
+                'error_message': date_err,
+                'form_data': request.POST,
+                'preselected_order_id': order.id,
+                'is_admin': admin_mode,
+                'is_edit': True,
+                'bill': bill,
+            })
+
+        # 2. Check total miscellaneous expenses (महल ११ को कुल जोड <= रु २०००)
+        misc_amts = request.POST.getlist('misc_amount[]') or request.POST.getlist('misc_amount')
+        if not misc_amts:
+            row_indices = request.POST.getlist('row_index')
+            total_misc_input = sum(int(request.POST.get(f'misc_amt_{idx}') or 0) for idx in row_indices)
+        else:
+            total_misc_input = sum(int(m or 0) for m in misc_amts)
+
+        if total_misc_input > 2000:
+            return render(request, 'bill_form.html', {
+                'orders': orders,
+                'error_message': f"दैनिक तथा भ्रमण खर्चको बिलमा फुटकर खर्च (महल ११) को कुल जोड बढीमा रु. २,०००/- सम्म मात्र हुन सक्छ। (तपाईंले प्रविष्ट गर्नुभएको जम्मा फुटकर खर्च: रु. {total_misc_input}/-)",
+                'form_data': request.POST,
+                'preselected_order_id': order.id,
+                'is_admin': admin_mode,
+                'today_bs': get_today_bs(),
+                'default_date': default_date,
+                'is_edit': True,
+                'bill': bill,
+            })
+
+        # 3. Validate Travel Bill Item Dates against Order bounds
+        items_data_to_validate = []
+        dep_places = request.POST.getlist('departure_place[]') or request.POST.getlist('departure_place')
+        if dep_places:
+            dep_dates = request.POST.getlist('departure_date[]') or request.POST.getlist('departure_date')
+            arr_places = request.POST.getlist('arrival_place[]') or request.POST.getlist('arrival_place')
+            arr_dates = request.POST.getlist('arrival_date[]') or request.POST.getlist('arrival_date')
+            for i in range(len(dep_places)):
+                if dep_places[i].strip():
+                    items_data_to_validate.append({
+                        'departure_place': dep_places[i].strip(),
+                        'departure_date': dep_dates[i].strip() if i < len(dep_dates) else '',
+                        'arrival_place': arr_places[i].strip() if i < len(arr_places) else '',
+                        'arrival_date': arr_dates[i].strip() if i < len(arr_dates) else '',
+                    })
+        else:
+            row_indices = request.POST.getlist('row_index')
+            for idx in row_indices:
+                dep_p = request.POST.get(f'dep_place_{idx}', '').strip()
+                if dep_p:
+                    items_data_to_validate.append({
+                        'departure_place': dep_p,
+                        'departure_date': request.POST.get(f'dep_date_{idx}', '').strip(),
+                        'arrival_place': request.POST.get(f'arr_place_{idx}', '').strip(),
+                        'arrival_date': request.POST.get(f'arr_date_{idx}', '').strip(),
+                    })
+
+        is_items_valid, items_err = validate_travel_bill_item_dates(items_data_to_validate, order.start_date, order.end_date)
+        if not is_items_valid:
+            return render(request, 'bill_form.html', {
+                'orders': orders,
+                'error_message': items_err,
+                'form_data': request.POST,
+                'preselected_order_id': order.id,
+                'is_admin': admin_mode,
+                'today_bs': get_today_bs(),
+                'default_date': default_date,
+                'is_edit': True,
+                'bill': bill,
+            })
+
+        address = request.POST.get('address', '').strip()
+        report_reg_no = request.POST.get('report_reg_no', '').strip()
+        if not report_reg_no and hasattr(order, 'report') and order.report and order.report.report_reg_no:
+            report_reg_no = order.report.report_reg_no
+        if not report_reg_no:
+            report_reg_no = order.order_number
+
+        paying_agency_type = request.POST.get('paying_agency_type', 'INTERNAL').strip()
+        external_agency_name = request.POST.get('external_agency_name', '').strip()
+
+        # Update bill
+        bill.bill_date = bill_date
+        bill.paying_agency_type = paying_agency_type
+        bill.external_agency_name = external_agency_name
+        bill.address = address
+        bill.report_reg_no = report_reg_no
+        bill.receipt_count = request.POST.get('receipt_count', '').strip()
+        bill.advance_taken = int(request.POST.get('advance_taken') or 0)
+        bill.amount_in_words = request.POST.get('amount_in_words', '')
+        bill.save()
+        
+        is_office_only = bool(order.is_office_vehicle_only)
+
+        # Recreate items
+        bill.items.all().delete()
+        
+        if dep_places:
+            dep_dates = request.POST.getlist('departure_date[]') or request.POST.getlist('departure_date')
+            dep_times = request.POST.getlist('departure_time[]') or request.POST.getlist('departure_time')
+            arr_places = request.POST.getlist('arrival_place[]') or request.POST.getlist('arrival_place')
+            arr_dates = request.POST.getlist('arrival_date[]') or request.POST.getlist('arrival_date')
+            arr_times = request.POST.getlist('arrival_time[]') or request.POST.getlist('arrival_time')
+            travel_modes = request.POST.getlist('travel_mode[]') or request.POST.getlist('travel_mode')
+            ticket_nos = request.POST.getlist('ticket_no[]') or request.POST.getlist('ticket_no')
+            fare_amts = request.POST.getlist('fare_amount[]') or request.POST.getlist('fare_amount')
+            da_days = request.POST.getlist('daily_allowance_days[]') or request.POST.getlist('daily_allowance_days')
+            da_rates = request.POST.getlist('daily_allowance_rate[]') or request.POST.getlist('daily_allowance_rate')
+            misc_descs = request.POST.getlist('misc_desc[]') or request.POST.getlist('misc_desc')
+            misc_amts = request.POST.getlist('misc_amount[]') or request.POST.getlist('misc_amount')
+            remarks = request.POST.getlist('remarks[]') or request.POST.getlist('remarks')
+
+            for i in range(len(dep_places)):
+                if dep_places[i].strip():
+                    raw_fare = int(fare_amts[i] or 0) if i < len(fare_amts) else 0
+                    final_fare = 0 if is_office_only else raw_fare
+                    
+                    raw_ticket = ticket_nos[i].strip() if i < len(ticket_nos) else ''
+                    final_ticket = '' if is_office_only else raw_ticket
+
+                    TravelBillItem.objects.create(
+                        travel_bill=bill,
+                        departure_place=dep_places[i].strip(),
+                        departure_date=dep_dates[i].strip() if i < len(dep_dates) else '',
+                        departure_time=dep_times[i].strip() if i < len(dep_times) else '',
+                        arrival_place=arr_places[i].strip() if i < len(arr_places) else '',
+                        arrival_date=arr_dates[i].strip() if i < len(arr_dates) else '',
+                        arrival_time=arr_times[i].strip() if i < len(arr_times) else '',
+                        transport_medium=travel_modes[i].strip() if i < len(travel_modes) else '',
+                        transport_fare=final_fare,
+                        daily_allowance_days=float(da_days[i] or 0.0) if i < len(da_days) else 0.0,
+                        daily_allowance_rate=int(da_rates[i] or 0) if i < len(da_rates) else 0,
+                        misc_desc=misc_descs[i].strip() if i < len(misc_descs) else '',
+                        misc_amount=int(misc_amts[i] or 0) if i < len(misc_amts) else 0,
+                        remarks=remarks[i].strip() if i < len(remarks) else ''
+                    )
+        else:
+            row_indices = request.POST.getlist('row_index')
+            for idx in row_indices:
+                dep_p = request.POST.get(f'dep_place_{idx}', '').strip()
+                if not dep_p:
+                    continue
+                raw_fare = int(request.POST.get(f'fare_amt_{idx}') or 0)
+                final_fare = 0 if is_office_only else raw_fare
+                
+                raw_ticket = request.POST.get(f'ticket_no_{idx}', '').strip()
+                final_ticket = '' if is_office_only else raw_ticket
+
+                TravelBillItem.objects.create(
+                    travel_bill=bill,
+                    departure_place=dep_p,
+                    departure_date=request.POST.get(f'dep_date_{idx}', '').strip(),
+                    departure_time=request.POST.get(f'dep_time_{idx}', '').strip(),
+                    arrival_place=request.POST.get(f'arr_place_{idx}', '').strip(),
+                    arrival_date=request.POST.get(f'arr_date_{idx}', '').strip(),
+                    arrival_time=request.POST.get(f'arr_time_{idx}', '').strip(),
+                    transport_medium=request.POST.get(f'mode_{idx}', '').strip(),
+                    transport_fare=final_fare,
+                    daily_allowance_days=float(request.POST.get(f'da_days_{idx}') or 0.0),
+                    daily_allowance_rate=int(request.POST.get(f'da_rate_{idx}') or 0),
+                    misc_desc=request.POST.get(f'misc_desc_{idx}', '').strip(),
+                    misc_amount=int(request.POST.get(f'misc_amt_{idx}') or 0),
+                    remarks=request.POST.get(f'remarks_{idx}', '').strip()
+                )
+
+        messages.success(request, f"आदेश नं. {order.order_number} को बिल सफलतापूर्वक सम्पादन भयो।")
+        return redirect(f'/bill/{bill.id}/')
+
+    # Initial form data
+    form_data = {
+        'travel_order': order.id,
+        'bill_date': bill.bill_date,
+        'address': bill.address,
+        'report_reg_no': bill.report_reg_no,
+        'paying_agency_type': bill.paying_agency_type,
+        'external_agency_name': bill.external_agency_name,
+        'receipt_count': bill.receipt_count,
+        'advance_taken': bill.advance_taken,
+        'amount_in_words': bill.amount_in_words,
+    }
+    return render(request, 'bill_form.html', {
+        'orders': orders,
+        'form_data': form_data,
+        'preselected_order_id': order.id,
+        'is_admin': admin_mode,
+        'today_bs': get_today_bs(),
+        'default_date': default_date,
+        'is_edit': True,
+        'bill': bill,
+        'bill_items': bill.items.all().order_by('id')
+    })
+
+def edit_report_view(request, pk):
+    report = get_object_or_404(TravelReport, pk=pk)
+    user = request.user
+    admin_mode = is_admin(user)
+    
+    if not admin_mode:
+        messages.error(request, "तपाईंलाई यो प्रतिवेदन सम्पादन गर्ने अनुमति छैन। (केबल एडमिनले मात्र सम्पादन गर्न सक्छन्)")
+        return redirect('/')
+
+    order = report.travel_order
+    orders = [order]
+    default_fy, default_date = get_default_date_for_fy(request)
+
+    if request.method == 'POST':
+        # 1. Validate dates against order bounds
+        is_items_valid, items_err = validate_travel_report_item_dates(request.POST, order.start_date, order.end_date)
+        if not is_items_valid:
+            return render(request, 'report_form.html', {
+                'orders': orders,
+                'error_message': items_err,
+                'form_data': request.POST,
+                'preselected_order_id': order.id,
+                'is_admin': admin_mode,
+                'today_bs': get_today_bs(),
+                'default_date': default_date,
+                'is_edit': True,
+                'report': report,
+            })
+
+        # Update report
+        report.report_reg_no = request.POST.get('report_reg_no', '').strip()
+        report.report_date = request.POST.get('report_date')
+        report.submitted_by = request.POST.get('submitted_by')
+        report.submitted_designation = request.POST.get('submitted_designation')
+        report.approved_by = request.POST.get('approved_by')
+        report.approved_designation = request.POST.get('approved_designation')
+        report.save()
+
+        # Recreate activities
+        report.activities.all().delete()
+        
+        row_indices = request.POST.getlist('row_index')
+        if not row_indices:
+            act_dates = request.POST.getlist('activity_date[]') or request.POST.getlist('activity_date')
+            act_details = request.POST.getlist('activity_details[]') or request.POST.getlist('activity_details')
+            remarks_list = request.POST.getlist('remarks[]') or request.POST.getlist('remarks')
+            
+            for i in range(len(act_dates)):
+                if act_dates[i].strip():
+                    TravelReportItem.objects.create(
+                        travel_report=report,
+                        activity_date=act_dates[i].strip(),
+                        activity_details=act_details[i].strip() if i < len(act_details) else '',
+                        remarks=remarks_list[i].strip() if i < len(remarks_list) else ''
+                    )
+        else:
+            for idx in row_indices:
+                adate = request.POST.get(f'act_date_{idx}', '').strip()
+                if adate:
+                    TravelReportItem.objects.create(
+                        travel_report=report,
+                        activity_date=adate,
+                        activity_details=request.POST.get(f'act_details_{idx}', '').strip(),
+                        remarks=request.POST.get(f'remarks_{idx}', '').strip()
+                    )
+
+        messages.success(request, f"आदेश नं. {order.order_number} को प्रतिवेदन सफलतापूर्वक सम्पादन भयो।")
+        return redirect(f'/report/{report.id}/')
+
+    # Initial form data
+    form_data = {
+        'travel_order': order.id,
+        'report_reg_no': report.report_reg_no,
+        'report_date': report.report_date,
+        'submitted_by': report.submitted_by,
+        'submitted_designation': report.submitted_designation,
+        'approved_by': report.approved_by,
+        'approved_designation': report.approved_designation,
+    }
+    return render(request, 'report_form.html', {
+        'orders': orders,
+        'form_data': form_data,
+        'preselected_order_id': order.id,
+        'is_admin': admin_mode,
+        'today_bs': get_today_bs(),
+        'default_date': default_date,
+        'is_edit': True,
+        'report': report,
+        'report_items': report.activities.all().order_by('id')
+    })

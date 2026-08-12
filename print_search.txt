@@ -1,0 +1,5 @@
+templates\travel_bill.html:225: <button onclick="window.print()" class="btn-print">🖨️ ल्यान्डस्केपमा बिल प्रिन्ट गर्नुहोस्</button>
+templates\travel_nivedan.html:198: <button onclick="window.print()" class="btn-print">🖨️ निवेदन प्रिन्ट गर्नुहोस् (Print Application)</button>
+templates\travel_order.html:173: <button onclick="window.print()" class="btn-print">🖨️ राष्ट्रिय भ्रमण आदेश प्रिन्ट गर्नुहोस्</button>
+templates\travel_register.html:335: <button onclick="window.print();" class="btn btn-primary">🖨️ खाता प्रिन्ट गर्नुहोस्</button>
+templates\travel_report.html:139: <button onclick="window.print()" class="btn-print">🖨️ भ्रमण प्रतिवेदन प्रिन्ट गर्नुहोस्</button>

@@ -137,6 +137,10 @@
 
     <div class="print-btn-bar">
         <button onclick="window.print()" class="btn-print">🖨️ भ्रमण प्रतिवेदन प्रिन्ट गर्नुहोस्</button>
+        {% if is_admin %}
+        <a href="/report/{{ report.id }}/edit/" style="margin-left: 10px; background:#f1f5f9; color:#1e293b; padding: 7px 14px; border:1px solid #cbd5e1; border-radius:6px; text-decoration:none; font-weight:600; font-size:13.5px; display:inline-flex; align-items:center; gap:5px;">✏️ सच्याउनुहोस् (Edit)</a>
+        <a href="/report/{{ report.id }}/delete/" onclick="return confirm('के तपाईं साँच्चै यो प्रतिवेदन मेटाउन चाहनुहुन्छ? (योसँग जोडिएका कार्य विवरणहरू पनि मेटिनेछन्)');" style="margin-left: 10px; background:#fee2e2; color:#b91c1c; padding: 7px 14px; border:1px solid #fca5a5; border-radius:6px; text-decoration:none; font-weight:700; font-size:13.5px; display:inline-flex; align-items:center; gap:5px;">🗑️ मेटाउनुहोस् (Delete)</a>
+        {% endif %}
         <a href="/" style="margin-left: 15px; color:#1e40af; text-decoration:none; font-weight:600;">⬅️ ड्यासबोर्डमा फर्कनुहोस्</a>
     </div>
 

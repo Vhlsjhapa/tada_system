@@ -172,7 +172,7 @@
 <div class="form-container">
     <div class="form-header">
         <div>
-            <h2>💰 नयाँ दैनिक तथा भ्रमण खर्चको बिल (म.ले.प. फाराम नं. २२४)</h2>
+            <h2>💰 {% if is_edit %}दैनिक तथा भ्रमण खर्चको बिल सच्याउनुहोस्{% else %}नयाँ दैनिक तथा भ्रमण खर्चको बिल{% endif %} (म.ले.प. फाराम नं. २२४)</h2>
             <p style="font-size:12px; color:#64748b; margin-top:2px;">भ्रमण आदेश छान्नुहोस् र खर्चका महलहरू प्रविष्ट गर्नुहोस् (सबै हिसाब स्वतः हुनेछ)</p>
         </div>
         <a href="/" style="color:#64748b; text-decoration:none; font-weight:600;">⬅️ ड्यासबोर्डमा फर्कनुहोस्</a>
@@ -191,7 +191,7 @@
     </div>
     {% endif %}
 
-    <form method="POST" action="/bill/new/" id="billForm">
+    <form method="POST" action="{% if is_edit %}/bill/{{ bill.id }}/edit/{% else %}/bill/new/{% endif %}" id="billForm">
         {% csrf_token %}
 
         <!-- १. सम्बन्धित भ्रमण आदेश -->
@@ -302,22 +302,42 @@
                     </tr>
                 </thead>
                 <tbody id="billItemsBody">
-                    <!-- Default Row 1 -->
-                    <tr class="dynamic-bill-row">
-                        <td><input type="text" id="row_dep_place" name="departure_place[]" value="भद्रपुर, झापा"></td>
-                        <td><input type="text" id="row_dep_date" name="departure_date[]" class="nepali-date-picker" value="{{ default_date|default:'२०८३/०४/२५' }}"></td>
-                        <td><input type="text" id="row_arr_place" name="arrival_place[]" value="विर्तामोड, झापा"></td>
-                        <td><input type="text" id="row_arr_date" name="arrival_date[]" class="nepali-date-picker" value="{{ default_date|default:'२०८३/०४/२५' }}"></td>
-                        <td><input type="text" name="transport_medium[]" value="सार्वजनिक सवारी"></td>
-                        <td><input type="number" name="transport_fare[]" class="calc-field" value="500"></td>
-                        <td><input type="number" step="0.01" name="daily_allowance_days[]" id="row_da_days" class="calc-field" value="2.25"></td>
-                        <td><input type="number" name="daily_allowance_rate[]" class="calc-field" value="1600"></td>
-                        <td><input type="number" name="daily_allowance_total[]" readonly style="background:#f1f5f9;" value="3600"></td>
-                        <td><input type="text" name="misc_desc[]" placeholder="स्टेशनरी/स्थानीय"></td>
-                        <td><input type="number" name="misc_amount[]" class="calc-field" value="300"></td>
-                        <td><input type="number" name="row_total[]" readonly style="background:#f1f5f9; font-weight:bold;" value="4400"></td>
-                        <td><button type="button" class="btn-del-row" onclick="deleteRow(this)">✕</button></td>
-                    </tr>
+                    {% if form_data.items %}
+                        {% for item in form_data.items %}
+                        <tr class="dynamic-bill-row">
+                            <td><input type="text" name="departure_place[]" value="{{ item.departure_place }}"></td>
+                            <td><input type="text" name="departure_date[]" class="nepali-date-picker" value="{{ item.departure_date }}"></td>
+                            <td><input type="text" name="arrival_place[]" value="{{ item.arrival_place }}"></td>
+                            <td><input type="text" name="arrival_date[]" class="nepali-date-picker" value="{{ item.arrival_date }}"></td>
+                            <td><input type="text" name="transport_medium[]" value="{{ item.transport_medium }}"></td>
+                            <td><input type="number" name="transport_fare[]" class="calc-field" value="{{ item.transport_fare }}"></td>
+                            <td><input type="number" step="0.01" name="daily_allowance_days[]" class="calc-field" value="{{ item.daily_allowance_days }}"></td>
+                            <td><input type="number" name="daily_allowance_rate[]" class="calc-field" value="{{ item.daily_allowance_rate }}"></td>
+                            <td><input type="number" name="daily_allowance_total[]" readonly style="background:#f1f5f9;" value="{{ item.daily_allowance_total }}"></td>
+                            <td><input type="text" name="misc_desc[]" placeholder="स्टेशनरी/स्थानीय" value="{{ item.misc_desc }}"></td>
+                            <td><input type="number" name="misc_amount[]" class="calc-field" value="{{ item.misc_amount }}"></td>
+                            <td><input type="number" name="row_total[]" readonly style="background:#f1f5f9; font-weight:bold;" value="{{ item.row_total }}"></td>
+                            <td><button type="button" class="btn-del-row" onclick="deleteRow(this)">✕</button></td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Default Row 1 -->
+                        <tr class="dynamic-bill-row">
+                            <td><input type="text" id="row_dep_place" name="departure_place[]" value="भद्रपुर, झापा"></td>
+                            <td><input type="text" id="row_dep_date" name="departure_date[]" class="nepali-date-picker" value="{{ default_date|default:'२०८३/०४/२५' }}"></td>
+                            <td><input type="text" id="row_arr_place" name="arrival_place[]" value="विर्तामोड, झापा"></td>
+                            <td><input type="text" id="row_arr_date" name="arrival_date[]" class="nepali-date-picker" value="{{ default_date|default:'२०८३/०४/२५' }}"></td>
+                            <td><input type="text" name="transport_medium[]" value="सार्वजनिक सवारी"></td>
+                            <td><input type="number" name="transport_fare[]" class="calc-field" value="500"></td>
+                            <td><input type="number" step="0.01" name="daily_allowance_days[]" id="row_da_days" class="calc-field" value="2.25"></td>
+                            <td><input type="number" name="daily_allowance_rate[]" class="calc-field" value="1600"></td>
+                            <td><input type="number" name="daily_allowance_total[]" readonly style="background:#f1f5f9;" value="3600"></td>
+                            <td><input type="text" name="misc_desc[]" placeholder="स्टेशनरी/स्थानीय"></td>
+                            <td><input type="number" name="misc_amount[]" class="calc-field" value="300"></td>
+                            <td><input type="number" name="row_total[]" readonly style="background:#f1f5f9; font-weight:bold;" value="4400"></td>
+                            <td><button type="button" class="btn-del-row" onclick="deleteRow(this)">✕</button></td>
+                        </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
@@ -328,28 +348,28 @@
         <div class="summary-grid">
             <div class="summary-card">
                 <label>१. जम्मा यातायात खर्च रू (महल ६)</label>
-                <input type="number" name="total_transport" id="id_total_transport" readonly value="500">
+                <input type="number" name="total_transport" id="id_total_transport" readonly value="{% if form_data.total_transport %}{{ form_data.total_transport }}{% else %}500{% endif %}">
             </div>
             <div class="summary-card">
                 <label>२. जम्मा दैनिक भत्ता रू (महल ९)</label>
-                <input type="number" name="total_daily_allowance" id="id_total_daily_allowance" readonly value="3600">
+                <input type="number" name="total_daily_allowance" id="id_total_daily_allowance" readonly value="{% if form_data.total_daily_allowance %}{{ form_data.total_daily_allowance }}{% else %}3600{% endif %}">
             </div>
             <div class="summary-card">
                 <label>४. जम्मा फुटकर खर्च रू (महल ११)</label>
-                <input type="number" name="total_misc" id="id_total_misc" readonly value="300">
+                <input type="number" name="total_misc" id="id_total_misc" readonly value="{% if form_data.total_misc %}{{ form_data.total_misc }}{% else %}300{% endif %}">
                 <div id="misc_limit_warning" style="display:none; color:#dc2626; font-size:11px; font-weight:bold; margin-top:2px;">⚠️ फुटकर खर्चको अधिकतम सीमा रु. २,०००/- मात्र हो!</div>
             </div>
             <div class="summary-card">
                 <label>५. कुल जम्मा खर्च रू (१+२+४)</label>
-                <input type="number" name="grand_total" id="id_grand_total" readonly style="color:#0284c7;" value="4400">
+                <input type="number" name="grand_total" id="id_grand_total" readonly style="color:#0284c7;" value="{% if form_data.grand_total %}{{ form_data.grand_total }}{% else %}4400{% endif %}">
             </div>
             <div class="summary-card">
                 <label>६. भ्रमण पेस्की रकम रू.</label>
-                <input type="number" name="advance_taken" id="id_advance_taken" value="0">
+                <input type="number" name="advance_taken" id="id_advance_taken" value="{% if form_data.advance_taken %}{{ form_data.advance_taken }}{% else %}0{% endif %}">
             </div>
             <div class="summary-card">
                 <label>७. खुद भुक्तानी पाउने रकम रू.</label>
-                <input type="number" name="net_payable" id="id_net_payable" readonly style="color:#15803d; font-size:15px;" value="4400">
+                <input type="number" name="net_payable" id="id_net_payable" readonly style="color:#15803d; font-size:15px;" value="{% if form_data.net_payable %}{{ form_data.net_payable }}{% else %}4400{% endif %}">
             </div>
         </div>
 
