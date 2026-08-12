@@ -741,12 +741,8 @@ def manage_users(request):
                         for emp_id in managed_emp_ids:
                             emp = Employee.objects.filter(id=emp_id).first()
                             if emp:
-                                if emp.user:
-                                    emp.user.is_active = False
-                                    emp.user.save(update_fields=['is_active'])
-                                    emp.user = None
                                 emp.managed_by = target_user
-                                emp.save(update_fields=['user', 'managed_by'])
+                                emp.save(update_fields=['managed_by'])
                     else:
                         target_user.managed_employees.update(managed_by=None)
                         
@@ -783,12 +779,8 @@ def manage_users(request):
                         for emp_id in managed_emp_ids:
                             emp = Employee.objects.filter(id=emp_id).first()
                             if emp:
-                                if emp.user:
-                                    emp.user.is_active = False
-                                    emp.user.save(update_fields=['is_active'])
-                                    emp.user = None
                                 emp.managed_by = new_user
-                                emp.save(update_fields=['user', 'managed_by'])
+                                emp.save(update_fields=['managed_by'])
                     messages.success(request, f"नयाँ प्रयोगकर्ता '{new_user.username}' सफलतापूर्वक सिर्जना गरियो।")
                     return redirect('/users/')
 
