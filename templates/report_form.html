@@ -118,7 +118,7 @@
     </div>
     {% endif %}
 
-    <form method="POST" action="{% if is_edit %}/report/{{ form_data.report_id }}/edit/{% else %}/report/new/{% endif %}">
+    <form method="POST" action="{% if is_edit %}/report/{{ report.id }}/edit/{% else %}/report/new/{% endif %}">
         {% csrf_token %}
 
         <!-- १. सम्बन्धित भ्रमण आदेश -->
