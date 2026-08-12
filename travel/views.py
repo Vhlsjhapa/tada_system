@@ -699,7 +699,8 @@ def manage_users(request):
                 if username and username != target_user.username and User.objects.filter(username=username).exists():
                     error_message = f"युजरनेम '{username}' पहिले नै अर्को प्रयोगकर्ताले प्रयोग गरिसकेको छ।"
                 else:
-                    if target_user.is_superuser:
+                    # Protect the main admin or the currently logged-in user from losing their admin rights
+                    if target_user.is_superuser and (target_user.pk == request.user.pk or target_user.username == 'admin'):
                         is_staff_val = True
                         is_superuser_val = True
                         is_active = True
