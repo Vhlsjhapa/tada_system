@@ -304,7 +304,7 @@
         <div class="salutation">महोदय,</div>
 
         <div class="letter-content">
-            प्रस्तुत विषयमा यस कार्यालयको स्वीकृत राष्ट्रिय भ्रमण आदेश नं. <b>{{ bill.travel_order.order_number }}</b> (आदेश मिति: <b>{{ bill.travel_order.order_date }}</b>) अनुसार म तपसिलको कर्मचारी मिति <b>{{ bill.travel_order.start_date }}</b> देखि <b>{{ bill.travel_order.end_date }}</b> सम्म <b>{{ bill.travel_order.destination }}</b> को भ्रमण कार्य सन्तोषजनक रूपमा सम्पन्न गरी कार्यालयमा हाजिर भइसकेको व्यहोरा अनुरोध गर्दछु ।
+            प्रस्तुत विषयमा {% if bill.paying_agency_type == 'EXTERNAL' %}<b>{{ bill.travel_order.office_name }}</b>को{% else %}यस कार्यालयको{% endif %} स्वीकृत राष्ट्रिय भ्रमण आदेश नं. <b>{{ bill.travel_order.order_number }}</b> (आदेश मिति: <b>{{ bill.travel_order.order_date }}</b>) अनुसार म तपसिलको कर्मचारी मिति <b>{{ bill.travel_order.start_date }}</b> देखि <b>{{ bill.travel_order.end_date }}</b> सम्म <b>{{ bill.travel_order.destination }}</b> को भ्रमण कार्य सन्तोषजनक रूपमा सम्पन्न गरी कार्यालयमा हाजिर भइसकेको व्यहोरा अनुरोध गर्दछु ।
         </div>
 
         <div class="letter-content">
@@ -331,7 +331,7 @@
                 <b>पद:</b> {{ bill.travel_order.designation }}<br>
                 <b>कर्मचारी संकेत नं.:</b> {{ bill.travel_order.code_no|default:"-" }}<br>
                 <b>स्थायी ठेगाना:</b> {% if bill.address %}{{ bill.address }}{% elif bill.travel_order.employee %}{{ bill.travel_order.employee.permanent_address|default:"-" }}{% else %}-{% endif %}<br>
-                <b>कार्यालय:</b> {{ office_name }}
+                <b>कार्यालय:</b> {{ bill.travel_order.office_name }}
             </div>
         </div>
 

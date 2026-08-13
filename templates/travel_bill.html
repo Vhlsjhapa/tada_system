@@ -243,7 +243,7 @@
             <div class="office-title-1">{{ bill.paying_office.parent_body_1|default:"नेपाल सरकार" }}</div>
             {% if bill.paying_office.parent_body_2 %}<div class="office-title-1" style="font-size:12px; font-weight:normal;">{{ bill.paying_office.parent_body_2 }}</div>{% endif %}
             <div class="office-title-2">{{ bill.paying_office.name }}</div>
-            <div class="office-code">कार्यालय कोड नं.: {{ bill.paying_office.code }}</div>
+            <div class="office-code">कार्यालय कोड नं.: {{ bill.paying_office.office_code|default:"-" }}</div>
             {% else %}
             <div class="office-title-1">{{ bill.travel_order.parent_body_1|default:"नेपाल सरकार" }}</div>
             {% if bill.travel_order.parent_body_2 %}<div class="office-title-1" style="font-size:12px; font-weight:normal;">{{ bill.travel_order.parent_body_2 }}</div>{% endif %}
@@ -275,7 +275,7 @@
             </td>
         </tr>
         <tr>
-            <td>कार्यालय: {% if bill.paying_agency_type == 'EXTERNAL' and bill.paying_office %}{{ bill.paying_office.name }}{% else %}{{ bill.travel_order.office_name }}{% endif %}</td>
+            <td>कार्यालय: {{ bill.travel_order.office_name }}</td>
             <td colspan="2">भ्रमणको उद्देश्य: <b>{{ bill.travel_order.purpose }}</b></td>
         </tr>
         <tr>
