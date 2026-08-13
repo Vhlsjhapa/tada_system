@@ -264,9 +264,18 @@
                 </select>
             </div>
             <div class="form-group" id="external_agency_box" style="display:none; grid-column: span 2;">
-                <label>भुक्तानी दिने अन्य निकायको नाम (External Agency / Project Name)</label>
+                <label>भुक्तानी दिने कार्यालय (Paying Agency / Office Name)</label>
+                
+                <select name="paying_office" id="id_paying_office" style="margin-bottom:10px;">
+                    <option value="">-- कार्यालय छान्नुहोस् --</option>
+                    {% for office in paying_offices %}
+                    <option value="{{ office.id }}" {% if form_data.paying_office == office.id|stringformat:"s" or bill.paying_office.id == office.id %}selected{% endif %}>{{ office.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <label>वा अन्य नाम (If other External Agency / Project Name)</label>
                 <input type="text" name="external_agency_name" id="id_external_agency_name" placeholder="जस्तै: कृषि विकास निर्देशनालय / प्रदेश मन्त्रालय / आयोजना" value="{% if form_data.external_agency_name %}{{ form_data.external_agency_name }}{% endif %}">
-                <small style="color:#0369a1; font-size:11px;">(कर्मचारीले अन्य कार्यालयबाट भुक्तानी पाए तापनि यस प्रणालीमा बिल सुरक्षित हुनेछ तर यस कार्यालयको आन्तरिक भ्रमण खातामा जोडिने छैन)</small>
+                <small style="color:#0369a1; font-size:11px;">(माथिको सूचीमा नभएमा वा आयोजनाको नाम खुलाउनु परेमा मात्र यहाँ लेख्नुहोस्। यस प्रणालीमा बिल सुरक्षित हुनेछ तर आन्तरिक भ्रमण खातामा जोडिने छैन)</small>
             </div>
         </div>
 

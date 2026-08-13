@@ -151,11 +151,19 @@
                 <img src="{% static 'images/nepal_logo.svg' %}" alt="नेपाल सरकार निशान छाप" style="width:68px; height:auto; object-fit:contain;">
             </div>
             <div class="header-center" style="flex-grow:1; margin-bottom:0;">
+                {% if report.travel_order.bill and report.travel_order.bill.paying_agency_type == 'EXTERNAL' and report.travel_order.bill.paying_office %}
+                <b>{{ report.travel_order.bill.paying_office.parent_body_1|default:"नेपाल सरकार" }}</b><br>
+                {% if report.travel_order.bill.paying_office.parent_body_2 %}<b>{{ report.travel_order.bill.paying_office.parent_body_2 }}</b><br>{% endif %}
+                {% if report.travel_order.bill.paying_office.parent_body_3 %}<b>{{ report.travel_order.bill.paying_office.parent_body_3 }}</b><br>{% endif %}
+                <b>{{ report.travel_order.bill.paying_office.name }}</b><br>
+                कार्यालय कोड नं.: {{ report.travel_order.bill.paying_office.code }}<br>
+                {% else %}
                 <b>{{ report.travel_order.parent_body_1|default:"नेपाल सरकार" }}</b><br>
                 {% if report.travel_order.parent_body_2 %}<b>{{ report.travel_order.parent_body_2 }}</b><br>{% endif %}
                 {% if report.travel_order.parent_body_3 %}<b>{{ report.travel_order.parent_body_3 }}</b><br>{% endif %}
                 <b>{{ report.travel_order.office_name }}</b><br>
                 कार्यालय कोड नं.: {{ report.travel_order.office_code }}<br>
+                {% endif %}
                 <div class="form-title">भ्रमण सम्पन्न प्रतिवेदन</div>
             </div>
             <div style="width:90px;"></div>

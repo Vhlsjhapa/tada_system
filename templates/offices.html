@@ -569,7 +569,12 @@
 
                 <div class="form-group" style="flex-direction:row; align-items:center; gap:8px; margin-top:8px;">
                     <input type="checkbox" name="is_default" id="id_is_default" style="width:18px; height:18px; cursor:pointer;">
-                    <label for="id_is_default" style="cursor:pointer; margin-bottom:0;">यस कार्यालयलाई सक्रिय (Default) कार्यालय बनाउनुहोस्</label>
+                    <label for="id_is_default" style="cursor:pointer; margin-bottom:0;">यो पूर्वनिर्धारित कार्यालय (Default) हो भनी सेट गर्नुहोस्</label>
+                </div>
+                
+                <div class="form-group" style="flex-direction:row; align-items:center; gap:8px; margin-top:8px;">
+                    <input type="checkbox" name="is_paying_agency" id="id_is_paying_agency" style="width:18px; height:18px; cursor:pointer;">
+                    <label for="id_is_paying_agency" style="cursor:pointer; margin-bottom:0; color:#b91c1c;">अन्य प्रयोजन (Paying Agency) को लागि पनि प्रयोग गर्ने</label>
                 </div>
 
                 <button type="submit" class="btn-save" id="btnSubmit">💾 कार्यालय सुरक्षित गर्नुहोस्</button>
@@ -585,19 +590,19 @@
             {% for off in offices %}
             <div class="office-card {% if off.is_default %}active-office{% endif %}">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
+                    <div style="font-weight:700; color:#1e293b; font-size:15px; margin-bottom:4px;">
+                        {{ off.name }}
                         {% if off.is_default %}
-                        <span class="badge-active">★ सक्रिय (Active Default)</span>
-                        {% else %}
-                        <span style="font-size:12px; color:#64748b;">सामान्य कार्यालय</span>
+                        <span style="display:inline-block; font-size:11px; background:#22c55e; color:white; padding:2px 6px; border-radius:12px; margin-left:6px; vertical-align:middle;">सक्रिय (Active)</span>
+                        {% endif %}
+                        {% if off.is_paying_agency %}
+                        <span style="display:inline-block; font-size:11px; background:#eab308; color:white; padding:2px 6px; border-radius:12px; margin-left:6px; vertical-align:middle;">Paying Agency</span>
                         {% endif %}
                     </div>
                     <div style="font-size:12px; color:#64748b;">
                         कोड: <b>{{ off.office_code|default:"-" }}</b>
                     </div>
                 </div>
-
-                <div class="office-name">{{ off.name }}</div>
 
                 <div class="office-hierarchy">
                     <b>{{ off.parent_body_1|default:"" }}</b><br>
@@ -612,7 +617,7 @@
                 </div>
 
                 <div class="office-actions">
-                    <button type="button" class="btn-edit" onclick="editOffice({{ off.id }}, '{{ off.name|escapejs }}', '{{ off.parent_body_1|escapejs }}', '{{ off.parent_body_2|escapejs }}', '{{ off.parent_body_3|escapejs }}', '{{ off.office_code|escapejs }}', '{{ off.location|escapejs }}', '{{ off.head_title|escapejs }}', '{{ off.phone_no|escapejs }}', {{ off.is_default|yesno:'true,false' }})">✏️ सच्याउनुहोस् (Edit)</button>
+                    <button type="button" class="btn-edit" onclick="editOffice({{ off.id }}, '{{ off.name|escapejs }}', '{{ off.parent_body_1|escapejs }}', '{{ off.parent_body_2|escapejs }}', '{{ off.parent_body_3|escapejs }}', '{{ off.office_code|escapejs }}', '{{ off.location|escapejs }}', '{{ off.head_title|escapejs }}', '{{ off.phone_no|escapejs }}', {{ off.is_default|yesno:'true,false' }}, {{ off.is_paying_agency|yesno:'true,false' }})">✏️ सम्पादन (Edit)</button>
                     {% if not off.is_default %}
                     <a href="/offices/set-default/{{ off.id }}/" class="btn-action-active">★ सक्रिय बनाउनुहोस्</a>
                     {% endif %}
@@ -631,7 +636,7 @@
 </div>
 
 <script>
-    function editOffice(id, name, p1, p2, p3, code, loc, head, phone, isDef) {
+    function editOffice(id, name, p1, p2, p3, code, loc, head, phone, isDef, isPaying) {
         document.getElementById('office_id').value = id;
         document.getElementById('id_name').value = name;
         document.getElementById('id_parent_body_1').value = p1;
@@ -642,6 +647,7 @@
         document.getElementById('id_head_title').value = head;
         document.getElementById('id_phone_no').value = phone;
         document.getElementById('id_is_default').checked = isDef;
+        document.getElementById('id_is_paying_agency').checked = isPaying;
 
         document.getElementById('formTitle').innerText = '✏️ कार्यालय विवरण सच्याउनुहोस् (Edit Office)';
         document.getElementById('btnSubmit').innerText = '🔄 अद्यावधिक (Update) गर्नुहोस्';

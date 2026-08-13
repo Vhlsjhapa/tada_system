@@ -444,6 +444,7 @@ def manage_offices(request):
         head_title = request.POST.get('head_title', 'कार्यालय प्रमुख')
         phone_no = request.POST.get('phone_no', '')
         is_default = bool(request.POST.get('is_default'))
+        is_paying_agency = bool(request.POST.get('is_paying_agency'))
 
         if office_id:
             office = get_object_or_404(Office, pk=office_id)
@@ -456,6 +457,7 @@ def manage_offices(request):
             office.head_title = head_title
             office.phone_no = phone_no
             office.is_default = is_default
+            office.is_paying_agency = is_paying_agency
             office.save()
             message = f"कार्यालय '{office.name}' को विवरण सफलतापूर्वक अद्यावधिक गरियो।"
         else:
@@ -468,7 +470,8 @@ def manage_offices(request):
                 location=location,
                 head_title=head_title,
                 phone_no=phone_no,
-                is_default=is_default
+                is_default=is_default,
+                is_paying_agency=is_paying_agency
             )
             message = f"नयाँ कार्यालय '{office.name}' सफलतापूर्वक थप गरियो।"
 
@@ -943,7 +946,10 @@ def bill_nivedan(request, pk):
     if bill.travel_order and not user_can_access_order(request.user, bill.travel_order):
         messages.error(request, "तपाईंलाई यो भुक्तानी निवेदन हेर्ने अनुमति छैन।")
         return redirect('/')
-    office = (bill.travel_order.office_ref if bill.travel_order else None) or Office.get_default_office()
+    if bill.paying_agency_type == 'EXTERNAL' and bill.paying_office:
+        office = bill.paying_office
+    else:
+        office = (bill.travel_order.office_ref if bill.travel_order else None) or Office.get_default_office()
     return render(request, 'travel_nivedan.html', {
         'title': f'दैनिक तथा भ्रमण खर्च भुक्तानी निवेदन - {bill.travel_order.person if bill.travel_order else ""}',
         'nivedan_type': 'claim',
@@ -1513,7 +1519,7 @@ def bill_form_view(request):
     if request.method == 'POST':
         order_id = request.POST.get('travel_order')
         if not order_id:
-            return render(request, 'bill_form.html', {
+            return render(request, 'bill_form.html', {'paying_offices': Office.objects.filter(is_paying_agency=True), 
                 'orders': orders,
                 'error_message': 'कृपया सम्बन्धित भ्रमण आदेश छान्नुहोस्।',
                 'form_data': request.POST,
@@ -1525,7 +1531,7 @@ def bill_form_view(request):
         
         # Verify access
         if not user_can_access_order(user, order):
-            return render(request, 'bill_form.html', {
+            return render(request, 'bill_form.html', {'paying_offices': Office.objects.filter(is_paying_agency=True), 
                 'orders': orders,
                 'error_message': 'तपाईंलाई यो भ्रमण आदेशको बिल बनाउने अधिकार छैन।',
                 'is_admin': admin_mode,
@@ -1534,7 +1540,7 @@ def bill_form_view(request):
         # Check if bill already exists for this order
         existing_bill = TravelBill.objects.filter(travel_order=order).first()
         if existing_bill:
-            return render(request, 'bill_form.html', {
+            return render(request, 'bill_form.html', {'paying_offices': Office.objects.filter(is_paying_agency=True), 
                 'orders': orders,
                 'error_message': f"उक्त भ्रमण आदेश (आदेश नं. {order.order_number}) को दैनिक तथा भ्रमण खर्चको बिल (# {existing_bill.id}) पहिले नै दर्ता भइसकेको छ। दोहोरो बिल सिर्जना गर्न मिल्दैन।",
                 'form_data': request.POST,
@@ -1547,7 +1553,7 @@ def bill_form_view(request):
         # 1. Validate bill_date >= order.end_date
         is_valid_date, date_err = validate_travel_bill_date(bill_date, order.end_date)
         if not is_valid_date:
-            return render(request, 'bill_form.html', {
+            return render(request, 'bill_form.html', {'paying_offices': Office.objects.filter(is_paying_agency=True), 
                 'orders': orders,
                 'error_message': date_err,
                 'form_data': request.POST,
@@ -1564,7 +1570,7 @@ def bill_form_view(request):
             total_misc_input = sum(int(m or 0) for m in misc_amts)
 
         if total_misc_input > 2000:
-            return render(request, 'bill_form.html', {
+            return render(request, 'bill_form.html', {'paying_offices': Office.objects.filter(is_paying_agency=True), 
                 'orders': orders,
                 'error_message': f"दैनिक तथा भ्रमण खर्चको बिलमा फुटकर खर्च (महल ११) को कुल जोड बढीमा रु. २,०००/- सम्म मात्र हुन सक्छ। (तपाईंले प्रविष्ट गर्नुभएको जम्मा फुटकर खर्च: रु. {total_misc_input}/-)",
                 'form_data': request.POST,
@@ -1603,7 +1609,7 @@ def bill_form_view(request):
 
         is_items_valid, items_err = validate_travel_bill_item_dates(items_data_to_validate, order.start_date, order.end_date)
         if not is_items_valid:
-            return render(request, 'bill_form.html', {
+            return render(request, 'bill_form.html', {'paying_offices': Office.objects.filter(is_paying_agency=True), 
                 'orders': orders,
                 'error_message': items_err,
                 'form_data': request.POST,
@@ -1625,12 +1631,16 @@ def bill_form_view(request):
 
         paying_agency_type = request.POST.get('paying_agency_type', 'INTERNAL').strip()
         external_agency_name = request.POST.get('external_agency_name', '').strip()
+        
+        paying_office_id = request.POST.get('paying_office')
+        paying_office = Office.objects.filter(id=paying_office_id).first() if paying_office_id else None
 
         bill = TravelBill.objects.create(
             travel_order=order,
             bill_date=bill_date,
             paying_agency_type=paying_agency_type,
             external_agency_name=external_agency_name,
+            paying_office=paying_office,
             address=address,
             report_reg_no=report_reg_no,
             receipt_count=request.POST.get('receipt_count', '').strip(),
@@ -1719,7 +1729,7 @@ def bill_form_view(request):
             
         return redirect(f'/bill/{bill.id}/')
         
-    return render(request, 'bill_form.html', {
+    return render(request, 'bill_form.html', {'paying_offices': Office.objects.filter(is_paying_agency=True), 
         'orders': orders,
         'preselected_order_id': preselected_order_id,
         'is_admin': admin_mode,
@@ -1839,7 +1849,7 @@ def edit_bill_view(request, pk):
         # 1. Validate bill_date >= order.end_date
         is_valid_date, date_err = validate_travel_bill_date(bill_date, order.end_date)
         if not is_valid_date:
-            return render(request, 'bill_form.html', {
+            return render(request, 'bill_form.html', {'paying_offices': Office.objects.filter(is_paying_agency=True), 
                 'orders': orders,
                 'error_message': date_err,
                 'form_data': request.POST,
@@ -1858,7 +1868,7 @@ def edit_bill_view(request, pk):
             total_misc_input = sum(int(m or 0) for m in misc_amts)
 
         if total_misc_input > 2000:
-            return render(request, 'bill_form.html', {
+            return render(request, 'bill_form.html', {'paying_offices': Office.objects.filter(is_paying_agency=True), 
                 'orders': orders,
                 'error_message': f"दैनिक तथा भ्रमण खर्चको बिलमा फुटकर खर्च (महल ११) को कुल जोड बढीमा रु. २,०००/- सम्म मात्र हुन सक्छ। (तपाईंले प्रविष्ट गर्नुभएको जम्मा फुटकर खर्च: रु. {total_misc_input}/-)",
                 'form_data': request.POST,
@@ -1899,7 +1909,7 @@ def edit_bill_view(request, pk):
 
         is_items_valid, items_err = validate_travel_bill_item_dates(items_data_to_validate, order.start_date, order.end_date)
         if not is_items_valid:
-            return render(request, 'bill_form.html', {
+            return render(request, 'bill_form.html', {'paying_offices': Office.objects.filter(is_paying_agency=True), 
                 'orders': orders,
                 'error_message': items_err,
                 'form_data': request.POST,
@@ -1921,10 +1931,14 @@ def edit_bill_view(request, pk):
         paying_agency_type = request.POST.get('paying_agency_type', 'INTERNAL').strip()
         external_agency_name = request.POST.get('external_agency_name', '').strip()
 
+        paying_office_id = request.POST.get('paying_office')
+        paying_office = Office.objects.filter(id=paying_office_id).first() if paying_office_id else None
+
         # Update bill
         bill.bill_date = bill_date
         bill.paying_agency_type = paying_agency_type
         bill.external_agency_name = external_agency_name
+        bill.paying_office = paying_office
         bill.address = address
         bill.report_reg_no = report_reg_no
         bill.receipt_count = request.POST.get('receipt_count', '').strip()
@@ -2020,7 +2034,7 @@ def edit_bill_view(request, pk):
         'advance_taken': bill.advance_taken,
         'amount_in_words': bill.amount_in_words,
     }
-    return render(request, 'bill_form.html', {
+    return render(request, 'bill_form.html', {'paying_offices': Office.objects.filter(is_paying_agency=True), 
         'orders': orders,
         'form_data': form_data,
         'preselected_order_id': order.id,

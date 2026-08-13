@@ -75,6 +75,10 @@ class Office(models.Model):
         default=False, 
         verbose_name="सक्रिय / पूर्वनिर्धारित कार्यालय (Active/Default Office)"
     )
+    is_paying_agency = models.BooleanField(
+        default=False, 
+        verbose_name="अन्य प्रयोजन (Paying Agency)"
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="सिर्जना मिति")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="अद्यावधिक मिति")
 
@@ -539,6 +543,14 @@ class TravelBill(models.Model):
         default='INTERNAL', 
         db_index=True, 
         verbose_name="भुक्तानी गर्ने निकाय"
+    )
+    paying_office = models.ForeignKey(
+        Office,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="भुक्तानी गर्ने कार्यालय",
+        related_name="paid_bills"
     )
     external_agency_name = models.CharField(
         max_length=255, 
