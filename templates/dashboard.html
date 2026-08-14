@@ -600,6 +600,12 @@
             </a>
         </li>
         <li>
+            <a href="/download-backup/">
+                <span class="menu-icon">💾</span>
+                <span>डाटा ब्याकअप (Backup)</span>
+            </a>
+        </li>
+        <li>
             <a href="/admin/" target="_blank">
                 <span class="menu-icon">⚙️</span>
                 <span>प्रणाली सेटिङ</span>
@@ -671,6 +677,10 @@
             {% if is_admin %}
             <a href="/offices/" style="font-size:12.5px; color:#1e40af; font-weight:700; text-decoration:none;">🔄 कार्यालय परिवर्तन ➔</a>
             
+            <a href="/download-backup/" style="background:#dcfce7; color:#166534; border:1px solid #86efac; padding:4px 10px; border-radius:5px; font-weight:700; font-size:12px; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+                💾 ब्याकअप डाउनलोड
+            </a>
+
             <form method="POST" action="/reset-all-records/" style="display:inline;" onsubmit="return confirm('के तपाईं साँच्चै पुराना सम्पूर्ण भ्रमण आदेश, बिल र प्रतिवेदनहरू मेटेर अटो नम्बर ००१ बाट सुरु गर्न चाहनुहुन्छ?');">
                 {% csrf_token %}
                 <button type="submit" style="background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; padding:4px 10px; border-radius:5px; font-weight:700; font-size:12px; cursor:pointer;">

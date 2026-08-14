@@ -2119,3 +2119,40 @@ def edit_report_view(request, pk):
         'is_edit': True,
         'report': report,
     })
+
+
+import io
+import zipfile
+from django.http import HttpResponse
+
+@login_required
+def download_backup_view(request):
+    user = request.user
+    if not is_admin(user):
+        messages.error(request, "ब्याकअप डाउनलोड गर्न एडमिन अधिकार आवश्यक पर्दछ।")
+        return redirect('/')
+    
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        # Include database file
+        db_path = settings.DATABASES['default']['NAME']
+        if os.path.exists(db_path):
+            zip_file.write(db_path, arcname='db.sqlite3')
+        
+        # Include media directory if exists
+        media_root = getattr(settings, 'MEDIA_ROOT', None)
+        if media_root and os.path.exists(media_root):
+            for root, dirs, files in os.walk(media_root):
+                for file in files:
+                    full_path = os.path.join(root, file)
+                    rel_path = os.path.relpath(full_path, media_root)
+                    zip_file.write(full_path, arcname=os.path.join('media', rel_path))
+
+    zip_buffer.seek(0)
+    today_bs = get_today_bs().replace('/', '-')
+    filename = f"TADA_System_Backup_{today_bs}.zip"
+    
+    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
