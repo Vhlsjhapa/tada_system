@@ -1388,8 +1388,8 @@ def edit_order_view(request, pk):
     user = request.user
     admin_mode = is_admin(user)
     
-    if not user_can_access_order(user, order):
-        messages.error(request, "तपाईंलाई यो भ्रमण आदेश सम्पादन गर्ने अनुमति छैन।")
+    if not admin_mode:
+        messages.error(request, "तपाईंलाई यो भ्रमण आदेश सम्पादन गर्ने अनुमति छैन। (केबल एडमिनले मात्र सम्पादन गर्न सक्छन्)")
         return redirect('/')
         
     user_emp = get_user_employee(user)
@@ -1836,8 +1836,8 @@ def edit_bill_view(request, pk):
     user = request.user
     admin_mode = is_admin(user)
     
-    if not user_can_access_order(user, bill.travel_order):
-        messages.error(request, "तपाईंलाई यो भ्रमण बिल सम्पादन गर्ने अनुमति छैन।")
+    if not admin_mode:
+        messages.error(request, "तपाईंलाई यो भ्रमण बिल सम्पादन गर्ने अनुमति छैन। (केबल एडमिनले मात्र सम्पादन गर्न सक्छन्)")
         return redirect('/')
 
     order = bill.travel_order
@@ -2053,8 +2053,8 @@ def edit_report_view(request, pk):
     user = request.user
     admin_mode = is_admin(user)
     
-    if not user_can_access_order(user, report.travel_order):
-        messages.error(request, "तपाईंलाई यो प्रतिवेदन सम्पादन गर्ने अनुमति छैन।")
+    if not admin_mode:
+        messages.error(request, "तपाईंलाई यो प्रतिवेदन सम्पादन गर्ने अनुमति छैन। (केबल एडमिनले मात्र सम्पादन गर्न सक्छन्)")
         return redirect('/')
 
     order = report.travel_order
