@@ -1658,9 +1658,9 @@ def bill_form_view(request):
             arr_places = request.POST.getlist('arrival_place[]') or request.POST.getlist('arrival_place')
             arr_dates = request.POST.getlist('arrival_date[]') or request.POST.getlist('arrival_date')
             arr_times = request.POST.getlist('arrival_time[]') or request.POST.getlist('arrival_time')
-            travel_modes = request.POST.getlist('travel_mode[]') or request.POST.getlist('travel_mode')
+            travel_modes = request.POST.getlist('transport_medium[]') or request.POST.getlist('transport_medium') or request.POST.getlist('travel_mode[]') or request.POST.getlist('travel_mode')
             ticket_nos = request.POST.getlist('ticket_no[]') or request.POST.getlist('ticket_no')
-            fare_amts = request.POST.getlist('fare_amount[]') or request.POST.getlist('fare_amount')
+            fare_amts = request.POST.getlist('transport_fare[]') or request.POST.getlist('transport_fare') or request.POST.getlist('fare_amount[]') or request.POST.getlist('fare_amount')
             da_days = request.POST.getlist('daily_allowance_days[]') or request.POST.getlist('daily_allowance_days')
             da_rates = request.POST.getlist('daily_allowance_rate[]') or request.POST.getlist('daily_allowance_rate')
             misc_descs = request.POST.getlist('misc_desc[]') or request.POST.getlist('misc_desc')
@@ -1698,7 +1698,7 @@ def bill_form_view(request):
                 dep_p = request.POST.get(f'dep_place_{idx}', '').strip()
                 if not dep_p:
                     continue
-                raw_fare = int(request.POST.get(f'fare_amt_{idx}') or 0)
+                raw_fare = int(request.POST.get(f'transport_fare_{idx}') or request.POST.get(f'fare_amt_{idx}') or 0)
                 final_fare = 0 if is_office_only else raw_fare
                 
                 raw_ticket = request.POST.get(f'ticket_no_{idx}', '').strip()
@@ -1957,9 +1957,9 @@ def edit_bill_view(request, pk):
             arr_places = request.POST.getlist('arrival_place[]') or request.POST.getlist('arrival_place')
             arr_dates = request.POST.getlist('arrival_date[]') or request.POST.getlist('arrival_date')
             arr_times = request.POST.getlist('arrival_time[]') or request.POST.getlist('arrival_time')
-            travel_modes = request.POST.getlist('travel_mode[]') or request.POST.getlist('travel_mode')
+            travel_modes = request.POST.getlist('transport_medium[]') or request.POST.getlist('transport_medium') or request.POST.getlist('travel_mode[]') or request.POST.getlist('travel_mode')
             ticket_nos = request.POST.getlist('ticket_no[]') or request.POST.getlist('ticket_no')
-            fare_amts = request.POST.getlist('fare_amount[]') or request.POST.getlist('fare_amount')
+            fare_amts = request.POST.getlist('transport_fare[]') or request.POST.getlist('transport_fare') or request.POST.getlist('fare_amount[]') or request.POST.getlist('fare_amount')
             da_days = request.POST.getlist('daily_allowance_days[]') or request.POST.getlist('daily_allowance_days')
             da_rates = request.POST.getlist('daily_allowance_rate[]') or request.POST.getlist('daily_allowance_rate')
             misc_descs = request.POST.getlist('misc_desc[]') or request.POST.getlist('misc_desc')
@@ -1996,7 +1996,7 @@ def edit_bill_view(request, pk):
                 dep_p = request.POST.get(f'dep_place_{idx}', '').strip()
                 if not dep_p:
                     continue
-                raw_fare = int(request.POST.get(f'fare_amt_{idx}') or 0)
+                raw_fare = int(request.POST.get(f'transport_fare_{idx}') or request.POST.get(f'fare_amt_{idx}') or 0)
                 final_fare = 0 if is_office_only else raw_fare
                 
                 raw_ticket = request.POST.get(f'ticket_no_{idx}', '').strip()
